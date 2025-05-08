@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head') %>
+    <body>
+        <div class="d-flex" id="wrapper">
+          
+            <!-- Page content wrapper-->
+            <div id="page-content-wrapper">
+                <!-- Top navigation-->
+                <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                    <div class="container-fluid">
+                        <!-- <button class="btn btn-primary" id="sidebarToggle">Toggle Menu</button> -->
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                        <%- include('../partials/right-top-menu') %>
+                    </div>
+                </nav>
+                <!-- Page content-->
+                <div class="container-fluid">
+                    <h1 class="mt-4"><%= contentTitle %></h1>    
+                <p class="text-black-50 pe-2" style="text-align: justify;">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere eligendi aspernatur amet. 
+                    Voluptatum voluptas excepturi expedita optio sit rem provident itaque hic, vero reprehenderit dolore enim at vitae repudiandae obcaecati.
+                 Lorem, ipsum dolor sit amet consectetur adipisicing elit. Voluptatem, deleniti? Perferendis illum doloribus at nemo, natus vero nesciunt libero fugiat, quis eos eveniet vitae veniam veritatis odio rerum sunt unde.  
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima repellendus rerum velit, iusto sed voluptate iste veritatis praesentium omnis odit, placeat vitae quis fuga illum soluta facere adipisci corrupti sapiente?
+                </p>   
+                
+                <p class="text-black-50 pe-2" style="text-align: justify;">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere eligendi aspernatur amet. 
+                    Voluptatum voluptas excepturi expedita optio sit rem provident itaque hic, vero reprehenderit dolore enim at vitae repudiandae obcaecati.
+                 Lorem, ipsum dolor sit amet consectetur adipisicing elit. Voluptatem, deleniti? Perferendis illum doloribus at nemo, natus vero nesciunt libero fugiat, quis eos eveniet vitae veniam veritatis odio rerum sunt unde.  
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima repellendus rerum velit, iusto sed voluptate iste veritatis praesentium omnis odit, placeat vitae quis fuga illum soluta facere adipisci corrupti sapiente?
+                </p>    
+            </div>
+            </div>
+            <%- include('./aouncment',{data:data}) %>  
+        </div>
+    <%- include('../partials/script') %>
+    </body>
+</html>
