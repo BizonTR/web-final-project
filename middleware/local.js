@@ -1,4 +1,5 @@
-module.exports=(req,res,next)=>{ //session'ı sayfalara parametre olarak göndermek yerine local tanımlanır. Böylece ejs sayfalarından erişilir.
-    res.locals.fullname=req.session.fullname;
+module.exports = (req, res, next) => {
+    res.locals.isAuth = req.session.isAuth || false; // Oturum açık mı?
+    res.locals.fullname = req.session.fullname || ""; // Kullanıcının tam adı
     next();
-}
+};

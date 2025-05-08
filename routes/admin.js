@@ -18,9 +18,6 @@ router.post("/edit/game/:id", isAuth, isAdmin, adminController.post_editGame);
 router.get("/delete/game/:id", isAuth, isAdmin, adminController.get_deleteGame);
 router.post("/delete/game", isAuth, isAdmin, adminController.post_deleteGame);
 
-router.get("/add/user", adminController.get_addUser);
-router.post("/add/user", adminController.post_addUser);
-
 router.get("/list/users", adminController.listUser);
 
 router.get("/edit/user/:id", (req, res) => {

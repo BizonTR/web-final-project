@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head') %>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center"><%= contentTitle %></h1>
+        <% if (typeof message !== "undefined") { %>
+            <div class="alert alert-<%= message.class %>"><%= message.text %></div>
+        <% } %>
+        <form action="/auth/register" method="post">
+            <div class="mb-3">
+                <label for="name" class="form-label">Ad</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="surname" class="form-label">Soyad</label>
+                <input type="text" class="form-control" id="surname" name="surname" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Şifre</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+        </form>
+    </div>
+    <%- include('../partials/script') %>
+</body>
+</html>
