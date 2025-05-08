@@ -1,41 +1,42 @@
-//--- Yukarıda tanımı yapılan tablolar oluşturuluyor
-const Anc=require("../models/anc");
-const Users=require("../models/users");
-const userCategory=require("../models/usercategory");
+const Game = require("../models/game");
+const Users = require("../models/users");
+const userCategory = require("../models/usercategory");
 const bcrypt = require('bcrypt');
 
-async function populate(){
-   categorycount=await userCategory.count();
-     if (categorycount==0){ //Category tablosunda hiç kayıt yoksa ekle
-            const c1=userCategory.build({categoryname:"Admin"});
-            await c1.save(); //await yaılmazsa save işlemi bitmeden diğer satıra geçer  
-            //save yöntemi kullanılmadan direkt kaydetme işlemi create yöntemi ile yapılabilir
-            await userCategory.create({categoryname:"Moderator"});
-            //aynı anda birden fazla kayıt eklemek için 
-            await userCategory.bulkCreate([{categoryname:"User"},
-                                    {categoryname:"Editer"}]);
-            await Users.create({
-            name:"Batuhan",
-            surname:"Sütcü",
-            email:"batuhan@mail.com",
-            password:await bcrypt.hash("123",10),
-            usercategoryId:1
-         });
+async function populate() {
+    const categoryCount = await userCategory.count();
+    if (categoryCount === 0) {
+        await userCategory.bulkCreate([
+            { categoryname: "Admin" },
+            { categoryname: "Moderator" },
+            { categoryname: "User" },
+            { categoryname: "Editor" },
+        ]);
 
-         await Users.create({
-            name:"Emre",
-            surname:"Demir",
-            email:"demirkemir@mail.com",
-            password:await bcrypt.hash("123",10),
-            usercategoryId:1
-         });
+        await Users.create({
+            name: "Batuhan",
+            surname: "Sütcü",
+            email: "batuhan@mail.com",
+            password: await bcrypt.hash("123", 10),
+            usercategoryId: 1,
+        });
 
-         await Anc.create({
-            title:"Final Takvimi",
-            exp:"Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam illum molestiae blanditiis ipsa repudiandae voluptatibus, amet, expedita dolorum doloribus omnis modi magni temporibus exercitationem repellendus vero accusantium ab natus recusandae.",
-            isactive:true,
-            userId:1
-         });
+        await Users.create({
+            name: "Emre",
+            surname: "Demir",
+            email: "demirkemir@mail.com",
+            password: await bcrypt.hash("123", 10),
+            usercategoryId: 1,
+        });
+
+        await Game.create({
+            title: "Final Schedule",
+            description: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            isActive: true,
+            url: "http://example.com/final-schedule",
+            userId: 1,
+        });
     }
- }
-module.exports=populate;
+}
+
+module.exports = populate;

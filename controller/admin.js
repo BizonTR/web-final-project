@@ -1,5 +1,5 @@
 const data=require("../data/dataarray");
-const Anc=require("../models/anc");
+const Anc=require("../models/game");
 const Users=require("../models/users");
 const userCategory=require("../models/usercategory");
 const bcrypt = require('bcrypt');

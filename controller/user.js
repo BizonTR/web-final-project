@@ -1,6 +1,6 @@
 // const data=require("../data/dataarray");
 //const db=require("../data/db");
-const Anc=require("../models/anc");
+const Anc=require("../models/game");
 
 exports.userHome=async(req,res,next)=>{ //ana sayfa
     try{
