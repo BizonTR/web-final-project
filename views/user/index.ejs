@@ -17,6 +17,13 @@
                 <!-- Page content-->
                 <div class="container-fluid">
                     <h1 class="mt-4"><%= contentTitle %></h1>    
+                <ul>
+                    <% games.forEach(game => { %>
+                        <li>
+                            <a href="/game/<%= game.id %>"><%= game.title %></a> <!-- id kullanılıyor -->
+                        </li>
+                    <% }) %>
+                </ul>
                 <p class="text-black-50 pe-2" style="text-align: justify;">
                     Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere eligendi aspernatur amet. 
                     Voluptatum voluptas excepturi expedita optio sit rem provident itaque hic, vero reprehenderit dolore enim at vitae repudiandae obcaecati.
@@ -32,7 +39,6 @@
                 </p>    
             </div>
             </div>
-            <%- include('./aouncment',{data:data}) %>  
         </div>
     <%- include('../partials/script') %>
     </body>

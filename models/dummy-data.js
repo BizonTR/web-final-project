@@ -26,14 +26,14 @@ async function populate() {
             surname: "Demir",
             email: "demirkemir@mail.com",
             password: await bcrypt.hash("123", 10),
-            usercategoryId: 1,
+            usercategoryId: 3,
         });
 
         await Game.create({
-            title: "Final Schedule",
-            description: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            title: "Witcher 3",
+            description: "RPG",
             isActive: true,
-            url: "http://example.com/final-schedule",
+            url: "https://cdn1.epicgames.com/offer/14ee004dadc142faaaece5a6270fb628/EGS_TheWitcher3WildHuntCompleteEdition_CDPROJEKTRED_S1_2560x1440-82eb5cf8f725e329d3194920c0c0b64f",
             userId: 1,
         });
     }

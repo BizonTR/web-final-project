@@ -1,8 +1,8 @@
-const express=require("express");
-const router=express.Router();
-const controllerUser=require("../controller/user");
+const express = require("express");
+const router = express.Router();
+const userController = require("../controller/user");
 
-router.get("/",controllerUser.userHome)
-router.get("/anc/view/:slug",controllerUser.viewAnc) //ejs sayfasından veritabanına kayıtlı slug parametre olarak gelir.
+router.get("/", userController.getGames); // Ana sayfa için route
+router.get("/game/:id", userController.getGameDetails); // Oyun detay sayfası için route
 
-module.exports=router;
+module.exports = router;

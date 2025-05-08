@@ -5,6 +5,7 @@ const bodyParser = require('body-parser'); // post edilen verileri almak için k
 const session = require('express-session'); // sadece import etmek yeterli değil. middleware klasörü içinde tanımlı config 'de kullanılmalıdır.
 const configSession = require("./middleware/config_Session");
 const locals = require("./middleware/local");
+const notFound = require("./middleware/notFound");
 
 const db = require("./data/db");
 const dummydata = require("./models/dummy-data");
@@ -35,6 +36,7 @@ const authRouter = require("./routes/auth");
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
+app.use("/", userRouter);
 
 // İlişkiler
 Users.hasMany(Game, { // Anc yerine Game kullanıldı
@@ -74,6 +76,8 @@ app.use((err, req, res, next) => {
     res.render("admin/error", { title: "Error Page", contentTitle: "Error Page", err: err });
     console.log("Hatamız=", err);
 });
+
+app.use(notFound); // 404 sayfası için middleware
 
 app.listen(3000, () => {
     console.log("Server running");

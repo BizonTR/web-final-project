@@ -1,0 +1,14 @@
+<%- include('../partials/head') %>
+<body>
+    <div class="container">
+        <h1 class="mt-4"><%= contentTitle %></h1>
+        <div class="mb-4 text-center">
+            <!-- Oyunun URL'sinden alınan resmi gösteriyoruz -->
+            <img src="<%= game.url %>" alt="<%= game.title %>" class="img-fluid rounded shadow-sm" style="max-width: 400px;">
+        </div>
+        <p><strong>Description:</strong> <%= game.description %></p>
+        <p><strong>Active:</strong> <%= game.isActive ? "Yes" : "No" %></p>
+        <a href="/" class="btn btn-primary mt-3">Back to Games</a>
+    </div>
+    <%- include('../partials/script') %>
+</body>

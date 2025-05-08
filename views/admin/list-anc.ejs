@@ -43,8 +43,8 @@
                                   <input type="checkbox" disabled <%=element.isactive?"checked":null%>>
                               </td>
                               <td class="text-end text-nowrap">
-                                  <a href="/admin/edit/anc/<%=element.id %>" class="btn btn-primary">Edit</a>
-                                  <a href="/admin/delete/anc/<%=element.id %>" class="delete-btn btn btn-danger" data-id="<%=element.id %>" data-title="<%=element.title %>" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete</a>                
+                                  <a href="/admin/edit/game/<%=element.id %>" class="btn btn-primary">Edit</a>
+                                  <a href="/admin/delete/game/<%=element.id %>" class="delete-btn btn btn-danger" data-id="<%=element.id %>" data-title="<%=element.title %>" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete</a>                
                               </td>
                             </tr>
                           <% }) %>
@@ -65,12 +65,12 @@
         <h5 class="modal-title" id="exampleModalLabel">Uyarı</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-  <form action="/admin/delete/anc" method="post">
+  <form action="/admin/delete/game" method="post">
       <div class="modal-body">
         <p class="fw-bold">Anouncement ID:<label id="id" class="fw-semibold"></label></p>
         <p class="fw-bold">Anouncement Title:<label id="title" class="fw-semibold"></label></p>
         <p class="fw-bold">Kaydı silmek istediğinize emin misiniz?</p>
-        <input type="hidden" value="" id="ancid" name="ancid"> <!-- form üzerinde anounce id'yi taşır. anounce Id değeri aşağıdaki scriptte set edilir-->
+        <input type="hidden" value="" id="gameid" name="gameid"> <!-- form üzerinde anounce id'yi taşır. anounce Id değeri aşağıdaki scriptte set edilir-->
       </div>
       <div class="modal-footer">
         <a href="#" id="yes" class="btn btn-danger">Linkli Evet</a>
@@ -89,8 +89,8 @@
      let title = $(this).data('title');
      $(".modal-body #id").text(id); //modalbox üzerindeki id id'li label'ın text'i set ediliyor
      $(".modal-body #title").text(title); //modalbox üzerindeki title id'li label'ın text'i set ediliyor
-     $(".modal-footer #yes").attr("href","/admin/delete/anc/"+id); //Linkli Evet butonunun href attribute'i set ediliyor
-     $(".modal-body #ancid").attr("value",id); //hidden input'un value değeri anouncemnet id'ye set ediliyor.
+     $(".modal-footer #yes").attr("href","/admin/delete/game/"+id); //Linkli Evet butonunun href attribute'i set ediliyor
+     $(".modal-body #gameid").attr("value",id); //hidden input'un value değeri anouncemnet id'ye set ediliyor.
    })
   });
 </script>

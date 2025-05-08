@@ -2,6 +2,7 @@
 const Users=require("../models/users")
 const session = require("express-session");
 const bcrypt = require('bcrypt');
+const userCategory = require("../models/usercategory");
 //const db=require("../data/db");
 
 exports.getLogin=(req,res,next)=>{
@@ -12,38 +13,30 @@ exports.getLogin=(req,res,next)=>{
 }
 
 
-exports.postLogin=async(req,res,next)=>{
-    console.log(req.body);
+exports.postLogin = async (req, res, next) => {
+    const user = await Users.findOne({
+        where: { email: req.body.email },
+        include: { model: userCategory, attributes: ["id", "categoryname"] },
+        raw: true,
+    });
 
-    //const user=authData.find(x=>x.email==req.body.email);
-    //const user=await db.execute("SELECT * FROM users WHERE email=?",[req.body.email]);
-    const user=await Users.findAll({
-        where:{
-            email:req.body.email
-        },
-        raw:true
-    })
-
-    console.log(user);
-
-    if (user.length==0) {
-        req.session.message={text:"Email hatalı",class:"warning"}
-        console.log("mesaj1=",req.session.message);
+    if (!user) {
+        req.session.message = { text: "Email hatalı", class: "warning" };
         return res.redirect("login");
     }
-      
-    if (await bcrypt.compare(req.body.password,user[0].password)){ //şifre uyuşuyorsa
-        req.session.isAuth=1;
-        req.session.userid=user[0].id; //duyuru kaydı yapan kullanıcı ID'si duyuru eklenirken veri tabanına yazılacak
-        req.session.fullname=user[0].name+" "+user[0].surname;
-        const url=req.query.url || "/admin/list/anc"; //req.query.url varsa onu yoksa "/admin/list/anc" url olarak kabul et.
-        return res.redirect(url);
+
+    if (await bcrypt.compare(req.body.password, user.password)) {
+        req.session.isAuth = true;
+        req.session.userid = user.id;
+        req.session.fullname = user.name + " " + user.surname;
+        req.session.usercategoryId = user["usercategory.id"]; // Kullanıcı kategorisi ID'si oturuma ekleniyor
+
+        return res.redirect("/");
     }
-    
-    //şifre uyuşmuyorsa
-    req.session.message={text:"Şifre hatalı",class:"warning"};
+
+    req.session.message = { text: "Şifre hatalı", class: "warning" };
     return res.redirect("login");
-}
+};
 
 
     exports.signout=async(req,res)=>{
