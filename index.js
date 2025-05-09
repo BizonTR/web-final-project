@@ -12,6 +12,8 @@ const dummydata = require("./models/dummy-data");
 const Game = require("./models/game"); // Anc yerine Game kullanıldı
 const Users = require("./models/users");
 const userCategory = require("./models/usercategory");
+const Friendship = require("./models/friendship");
+const FriendRequest = require("./models/friendrequest");
 const app = express();
 
 // set view engine
@@ -33,9 +35,11 @@ app.use(locals);
 const adminRouter = require("./routes/admin");
 const userRouter = require("./routes/user");
 const authRouter = require("./routes/auth");
+const friendRouter = require("./routes/friend");
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
+app.use("/friend", friendRouter);
 app.use("/", userRouter);
 
 // İlişkiler
@@ -59,6 +63,12 @@ userCategory.hasMany(Users, {
     onUpdate: "RESTRICT"
 });
 Users.belongsTo(userCategory);
+
+Users.hasMany(Friendship, { foreignKey: "userId" });
+Users.hasMany(Friendship, { foreignKey: "friendId" });
+
+Users.hasMany(FriendRequest, { foreignKey: "senderId" });
+Users.hasMany(FriendRequest, { foreignKey: "receiverId" });
 
 // uygulanması
 // --await çağrıları mutlaka async fonnksiyon içinde olmalıdır.

@@ -3,6 +3,8 @@
 const Anc=require("../models/game");
 const Game = require("../models/game");
 const Users = require("../models/users");
+const Friendship = require("../models/friendship");
+const FriendRequest = require("../models/friendrequest");
 
 exports.userHome=async(req,res,next)=>{ //ana sayfa
     try{
@@ -67,17 +69,62 @@ exports.getGameDetails = async (req, res, next) => {
 };
 
 exports.getProfileById = async (req, res, next) => {
-    const userId = req.params.id; // URL'den kullanıcı ID'sini al
+    const userId = req.session.userid; // Oturum açmış kullanıcının ID'si
+    const profileId = req.params.id; // Profilini görüntülemek istediğimiz kullanıcının ID'si
+
     try {
-        const user = await Users.findByPk(userId); // Kullanıcıyı DB'den al
+        // Kullanıcıyı DB'den al
+        const user = await Users.findByPk(profileId);
         if (!user) {
             return res.status(404).send("Kullanıcı bulunamadı.");
         }
+
+        // Arkadaşlık durumunu kontrol et
+        const isFriend = await Friendship.findOne({
+            where: {
+                userId: userId,
+                friendId: profileId,
+            },
+        });
+
+        // Gönderilmiş bir arkadaşlık isteği var mı kontrol et
+        const hasPendingRequest = await FriendRequest.findOne({
+            where: {
+                senderId: userId,
+                receiverId: profileId,
+                status: "pending",
+            },
+        });
+
+        // Oturum açmış kullanıcıya gelen bir arkadaşlık isteği var mı kontrol et
+        const hasIncomingRequest = await FriendRequest.findOne({
+            where: {
+                senderId: profileId,
+                receiverId: userId,
+                status: "pending",
+            },
+        });
+
+        // Kullanıcının arkadaşlarını al
+        const friends = await Friendship.findAll({
+            where: { userId: profileId },
+            include: [
+                {
+                    model: Users,
+                    as: "friend", // Arkadaş bilgilerini al
+                    attributes: ["id", "name", "surname"],
+                },
+            ],
+        });
 
         res.render("user/profile", {
             title: "Profil",
             contentTitle: "Kullanıcı Profili",
             user: user,
+            isFriend: !!isFriend, // Arkadaşsa true, değilse false
+            hasPendingRequest: !!hasPendingRequest, // Gönderilmiş istek varsa true
+            hasIncomingRequest: !!hasIncomingRequest, // Gelen istek varsa true
+            friends: friends.map(f => f.friend), // Arkadaş listesini gönder
         });
     } catch (err) {
         next(err);

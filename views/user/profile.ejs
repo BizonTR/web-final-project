@@ -10,5 +10,40 @@
     <p><strong>Ad:</strong> <%= user.name %></p>
     <p><strong>Soyad:</strong> <%= user.surname %></p>
     <p><strong>Email:</strong> <%= user.email %></p>
+
+    <% if (user.id !== userid) { %>
+        <% if (isFriend) { %>
+            <form action="/friend/remove/<%= user.id %>" method="POST">
+                <button type="submit">Arkadaşı Çıkar</button>
+            </form>
+        <% } else if (hasIncomingRequest) { %>
+            <form action="/friend/accept/<%= user.id %>" method="POST">
+                <button type="submit">Arkadaşlık İsteğini Kabul Et</button>
+            </form>
+        <% } else if (hasPendingRequest) { %>
+            <form action="/friend/remove-request/<%= user.id %>" method="POST">
+                <button type="submit">Arkadaşlık İsteğini Geri Al</button>
+            </form>
+        <% } else { %>
+            <form action="/friend/add/<%= user.id %>" method="POST">
+                <button type="submit">Arkadaş Ekle</button>
+            </form>
+        <% } %>
+    <% } %>
+
+    <h2>Arkadaşlarım</h2>
+    <ul>
+        <% if (friends.length > 0) { %>
+            <% friends.forEach(friend => { %>
+                <li>
+                    <a href="/user/profile/<%= friend.id %>">
+                        <%= friend.name %> <%= friend.surname %>
+                    </a>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>Hiç arkadaşınız yok.</p>
+        <% } %>
+    </ul>
 </body>
 </html>

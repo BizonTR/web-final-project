@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+</head>
+<body>
+    <h1><%= contentTitle %></h1>
+    <ul>
+        <% if (requests.length > 0) { %>
+            <% requests.forEach(request => { %>
+                <li>
+                    <%= request.sender.name %> <%= request.sender.surname %>
+                    <form action="/friend/accept/<%= request.sender.id %>" method="POST" style="display: inline;">
+                        <button type="submit">Kabul Et</button>
+                    </form>
+                    <form action="/friend/reject/<%= request.sender.id %>" method="POST" style="display: inline;">
+                        <button type="submit">Reddet</button>
+                    </form>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>Hiç arkadaşlık isteğiniz yok.</p>
+        <% } %>
+    </ul>
+</body>
+</html>
