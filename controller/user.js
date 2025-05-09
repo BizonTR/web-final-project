@@ -2,6 +2,7 @@
 //const db=require("../data/db");
 const Anc=require("../models/game");
 const Game = require("../models/game");
+const Users = require("../models/users");
 
 exports.userHome=async(req,res,next)=>{ //ana sayfa
     try{
@@ -59,6 +60,24 @@ exports.getGameDetails = async (req, res, next) => {
             title: game.title, 
             contentTitle: game.title, 
             game 
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.getProfileById = async (req, res, next) => {
+    const userId = req.params.id; // URL'den kullanıcı ID'sini al
+    try {
+        const user = await Users.findByPk(userId); // Kullanıcıyı DB'den al
+        if (!user) {
+            return res.status(404).send("Kullanıcı bulunamadı.");
+        }
+
+        res.render("user/profile", {
+            title: "Profil",
+            contentTitle: "Kullanıcı Profili",
+            user: user,
         });
     } catch (err) {
         next(err);
