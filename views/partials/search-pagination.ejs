@@ -1,0 +1,35 @@
+<!-- filepath: views/partials/search-pagination.ejs -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Search Bar -->
+    <form method="GET" action="<%= searchAction %>" class="d-flex">
+        <input 
+            type="text" 
+            name="search" 
+            class="form-control me-2" 
+            placeholder="Ara..." 
+            value="<%= searchQuery || '' %>"
+        >
+        <button type="submit" class="btn btn-primary">Ara</button>
+    </form>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination">
+            <% if (currentPage > 1) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= searchQuery || '' %>">Önceki</a>
+                </li>
+            <% } %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>&search=<%= searchQuery || '' %>"><%= i %></a>
+                </li>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= searchQuery || '' %>">Sonraki</a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
+</div>

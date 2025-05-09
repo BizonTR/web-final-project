@@ -3,6 +3,7 @@ const Users = require("../models/users");
 const userCategory = require("../models/usercategory");
 const bcrypt = require("bcrypt");
 const slugField = require("../helpers/slugfield");
+const { Op } = require("sequelize");
 
 exports.homePage = (req, res, next) => {
     res.render("admin/index", { title: "Ana sayfa", contentTitle: "Admin Home Page" });
@@ -31,13 +32,37 @@ exports.post_addGame = async (req, res, next) => {
 };
 
 exports.listGame = async (req, res, next) => {
-    const selectedData = await Game.findAll({
-        include: {
-            model: Users,
-            attributes: ["name", "surname"],
-        },
-    });
-    res.render("admin/list-anc", { title: "Oyun Listele", contentTitle: "List Games", data: selectedData }); // `anc` yerine `game`
+    const searchQuery = req.query.search || ""; // Arama sorgusu
+    const currentPage = parseInt(req.query.page) || 1; // Mevcut sayfa
+    const itemsPerPage = 5; // Sayfa başına gösterilecek oyun sayısı
+
+    try {
+        // Oyunları filtrele ve sayfalama uygula
+        const { count, rows } = await Game.findAndCountAll({
+            where: {
+                title: { [Op.like]: `%${searchQuery}%` }, // Arama sorgusuna göre filtreleme
+            },
+            include: {
+                model: Users,
+                attributes: ["name", "surname"],
+            },
+            limit: itemsPerPage,
+            offset: (currentPage - 1) * itemsPerPage,
+        });
+
+        const totalPages = Math.ceil(count / itemsPerPage);
+
+        res.render("admin/list-anc", {
+            title: "Oyun Listele",
+            contentTitle: "Oyunlar",
+            data: rows,
+            searchQuery,
+            currentPage,
+            totalPages,
+        });
+    } catch (err) {
+        next(err);
+    }
 };
 
 exports.get_editGame = async (req, res, next) => {
@@ -134,14 +159,44 @@ exports.post_addUser = async (req, res, next) => {
 };
 
 exports.listUser = async (req, res, next) => {
-    const selectedData = await Users.findAll({
-        attributes: ["name", "surname", "password", "id"],
-        include: {
-            model: userCategory,
-            attributes: ["categoryname"],
-        },
-    });
-    res.render("admin/list-user", { title: "User Listele", contentTitle: "List Users", data: selectedData });
+    const searchQuery = req.query.search || ""; // Arama sorgusu
+    const currentPage = parseInt(req.query.page) || 1; // Mevcut sayfa
+    const itemsPerPage = 5; // Sayfa başına gösterilecek kullanıcı sayısı
+
+    try {
+        // Arama sorgusunu dinamik olarak oluştur
+        const searchConditions = {
+            [Op.or]: [
+                { name: { [Op.like]: `%${searchQuery}%` } },
+                { surname: { [Op.like]: `%${searchQuery}%` } },
+                { email: { [Op.like]: `%${searchQuery}%` } },
+            ],
+        };
+
+        // Kullanıcıları filtrele ve sayfalama uygula
+        const { count, rows } = await Users.findAndCountAll({
+            where: searchConditions,
+            include: {
+                model: userCategory,
+                attributes: ["categoryname"],
+            },
+            limit: itemsPerPage,
+            offset: (currentPage - 1) * itemsPerPage,
+        });
+
+        const totalPages = Math.ceil(count / itemsPerPage);
+
+        res.render("admin/list-user", {
+            title: "Kullanıcı Listele",
+            contentTitle: "Kullanıcılar",
+            data: rows,
+            searchQuery,
+            currentPage,
+            totalPages,
+        });
+    } catch (err) {
+        next(err);
+    }
 };
 
 exports.ckeditor = (req, res, next) => {

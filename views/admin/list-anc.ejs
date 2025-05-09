@@ -50,6 +50,12 @@
                           <% }) %>
                         </tbody>
                       </table>       
+                      <%- include('../partials/search-pagination', {
+                          searchAction: '/admin/list/game',
+                          searchQuery: searchQuery,
+                          currentPage: currentPage,
+                          totalPages: totalPages
+                      }) %>
                 </div>
             </div>
         </div>

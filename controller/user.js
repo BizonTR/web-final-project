@@ -5,6 +5,7 @@ const Game = require("../models/game");
 const Users = require("../models/users");
 const Friendship = require("../models/friendship");
 const FriendRequest = require("../models/friendrequest");
+const { Op } = require("sequelize");
 
 exports.userHome=async(req,res,next)=>{ //ana sayfa
     try{
@@ -35,12 +36,29 @@ exports.viewAnc=async(req,res,next)=>{//duyuru details
 }
 
 exports.getGames = async (req, res, next) => {
+    const searchQuery = req.query.search || ""; // Arama sorgusu
+    const currentPage = parseInt(req.query.page) || 1; // Mevcut sayfa
+    const itemsPerPage = 5; // Sayfa başına gösterilecek oyun sayısı
+
     try {
-        const games = await Game.findAll();
-        res.render("user/index", { 
-            title: "Games", 
-            contentTitle: "All Games", 
-            games 
+        // Oyunları filtrele ve sayfalama uygula
+        const { count, rows } = await Game.findAndCountAll({
+            where: {
+                title: { [Op.like]: `%${searchQuery}%` }, // Arama sorgusuna göre filtreleme
+            },
+            limit: itemsPerPage,
+            offset: (currentPage - 1) * itemsPerPage,
+        });
+
+        const totalPages = Math.ceil(count / itemsPerPage);
+
+        res.render("user/index", {
+            title: "Oyunlar",
+            contentTitle: "Tüm Oyunlar",
+            games: rows,
+            searchQuery,
+            currentPage,
+            totalPages,
         });
     } catch (err) {
         next(err);
