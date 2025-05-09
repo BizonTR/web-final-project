@@ -31,6 +31,10 @@
         <% } %>
     <% } %>
 
+    <% if (isAdmin && user.id === userid) { %>
+        <a href="/admin" class="btn btn-primary">Admin Panel</a>
+    <% } %>
+
     <h2>Arkadaşlarım</h2>
     <ul>
         <% if (friends.length > 0) { %>

@@ -117,6 +117,9 @@ exports.getProfileById = async (req, res, next) => {
             ],
         });
 
+        // Kullanıcının admin olup olmadığını kontrol et
+        const isAdmin = req.session.usercategoryId === 1; // Admin kategorisi ID'si 1
+
         res.render("user/profile", {
             title: "Profil",
             contentTitle: "Kullanıcı Profili",
@@ -125,6 +128,7 @@ exports.getProfileById = async (req, res, next) => {
             hasPendingRequest: !!hasPendingRequest, // Gönderilmiş istek varsa true
             hasIncomingRequest: !!hasIncomingRequest, // Gelen istek varsa true
             friends: friends.map(f => f.friend), // Arkadaş listesini gönder
+            isAdmin: isAdmin, // Kullanıcının admin olup olmadığını gönder
         });
     } catch (err) {
         next(err);
