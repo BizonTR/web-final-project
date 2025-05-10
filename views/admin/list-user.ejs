@@ -28,7 +28,8 @@
                             <th>Ad</th>
                             <th>Soyad</th>
                             <th>Email</th>
-                            <th>Kategori</th>
+                            <th>Rol</th>
+                            <th>Online Durumu</th>
                             <th>Durum</th>
                             <th class="text-end">İşlemler</th>
                         </tr>
@@ -40,7 +41,32 @@
                                 <td><%= element.name %></td>
                                 <td><%= element.surname %></td>
                                 <td><%= element.email %></td>
-                                <td><%= element['usercategory.categoryname'] %></td>
+                                <td>
+                                    <%
+                                    // Get the user category ID, handling both possible property paths
+                                    let userCategoryId;
+                                    if (element['usercategory.id']) {
+                                        userCategoryId = parseInt(element['usercategory.id']);
+                                    } else if (element.usercategory && element.usercategory.id) {
+                                        userCategoryId = parseInt(element.usercategory.id);
+                                    }
+                                    %>
+                                    
+                                    <% if (userCategoryId === 1) { %>
+                                        <span class="badge bg-danger">Admin</span>
+                                    <% } else if (userCategoryId === 2) { %>
+                                        <span class="badge bg-warning text-dark">Moderatör</span>
+                                    <% } else { %>
+                                        <span class="badge bg-info">Kullanıcı</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (onlineUsers && onlineUsers.includes(parseInt(element.id))) { %>
+                                        <span class="badge bg-success"><i class="fas fa-circle"></i> Online</span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary"><i class="fas fa-circle"></i> Offline</span>
+                                    <% } %>
+                                </td>
                                 <td>
                                     <% if (element.userbans && element.userbans.length > 0 && element.userbans[0].isActive) { %>
                                         <span class="badge bg-danger">
@@ -56,29 +82,37 @@
                                         <i class="fas fa-history"></i> Geçmiş
                                     </a>
                                 </td>
+                                <!-- Kullanıcı işlem butonları -->
                                 <td class="text-end text-nowrap">
                                     <div class="btn-group">
-                                        <a href="/admin/edit/user/<%= element.id %>" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-edit"></i> Düzenle
-                                        </a>
-                                        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#banModal" 
-                                            data-id="<%= element.id %>" 
-                                            data-name="<%= element.name %> <%= element.surname %>">
-                                            <i class="fas fa-ban"></i> Ban At
-                                        </button>
-                                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#roleModal" 
-                                            data-id="<%= element.id %>" 
-                                            data-name="<%= element.name %> <%= element.surname %>"
-                                            data-role="<%= element['usercategory.id'] %>">
-                                            <i class="fas fa-user-tag"></i> Rol
-                                        </button>
-                                        <a href="/admin/delete/user/<%= element.id %>" class="btn btn-danger btn-sm delete-btn" 
-                                            data-id="<%= element.id %>" 
-                                            data-name="<%= element.name %> <%= element.surname %>" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteModal">
-                                            <i class="fas fa-trash"></i> Sil
-                                        </a>
+                                        
+                                        <% if (session.usercategoryId === 1 || element['usercategory.id'] !== 1) { %>
+                                            <!-- Süper Admin herkesi banlayabilir, Moderatör sadece normal kullanıcıları ve diğer moderatörleri banlayabilir -->
+                                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#banModal" 
+                                                data-id="<%= element.id %>" 
+                                                data-name="<%= element.name %> <%= element.surname %>">
+                                                <i class="fas fa-ban"></i> Ban At
+                                            </button>
+                                            
+                                            <!-- Rol değiştirme butonu -->
+                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#roleModal" 
+                                                data-id="<%= element.id %>" 
+                                                data-name="<%= element.name %> <%= element.surname %>"
+                                                data-role="<%= element['usercategory.id'] %>">
+                                                <i class="fas fa-user-tag"></i> Rol
+                                            </button>
+                                        <% } %>
+                                        
+                                        <% if (session.usercategoryId === 1) { %>
+                                            <!-- Sadece Süper Admin silme butonunu görebilir -->
+                                            <a href="/admin/delete/user/<%= element.id %>" class="btn btn-danger btn-sm delete-btn" 
+                                                data-id="<%= element.id %>" 
+                                                data-name="<%= element.name %> <%= element.surname %>" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteModal">
+                                                <i class="fas fa-trash"></i> Sil
+                                            </a>
+                                        <% } %>
                                     </div>
                                 </td>
                             </tr>
@@ -144,6 +178,7 @@
                 <form action="/admin/change-role" method="post">
                     <div class="modal-body">
                         <input type="hidden" id="roleUserId" name="userId">
+                        <input type="hidden" id="roleCategoryId" name="currentRole">
                         
                         <div class="mb-3">
                             <p><strong>Kullanıcı:</strong> <span id="roleUserName"></span></p>
@@ -152,9 +187,11 @@
                         <div class="mb-3">
                             <label for="newRole" class="form-label">Yeni Rol</label>
                             <select class="form-select" id="newRole" name="roleId">
-                                <option value="1">Admin</option>
-                                <option value="2">Editor</option>
-                                <option value="3">Normal Kullanıcı</option>
+                                <% if (session.usercategoryId === 1) { %>
+                                    <!-- Sadece Admin tüm rolleri atayabilir -->
+                                    <option value="2">Moderatör</option>
+                                <% } %>
+                                <option value="3">Kullanıcı</option>
                             </select>
                         </div>
                     </div>
@@ -230,6 +267,18 @@
                     document.getElementById('roleUserId').value = userId;
                     document.getElementById('roleUserName').textContent = userName;
                     document.getElementById('newRole').value = currentRole;
+                    document.getElementById('roleCategoryId').value = currentRole;
+                    
+                    // Pre-define the user category using EJS
+                    var userCategory = parseInt("<%= session.usercategoryId %>");
+                    
+                    // Süper Admin'i değiştirirken uyarı gösterme
+                    if (currentRole === "1" && userCategory !== 1) {
+                        document.getElementById('newRole').disabled = true;
+                        alert("Admin rolünü değiştiremezsiniz!");
+                    } else {
+                        document.getElementById('newRole').disabled = false;
+                    }
                 });
             }
 

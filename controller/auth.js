@@ -26,12 +26,18 @@ exports.postLogin = async (req, res, next) => {
     }
 
     if (await bcrypt.compare(req.body.password, user.password)) {
+        // Make sure these session values are set correctly
         req.session.isAuth = true;
         req.session.userid = user.id;
         req.session.fullname = user.name + " " + user.surname;
-        req.session.usercategoryId = user["usercategory.id"]; // Kullanıcı kategorisi ID'si oturuma ekleniyor
-
-        // Oturum bilgileri güncellendikten sonra ana sayfaya yönlendir
+        req.session.usercategoryId = user["usercategory.id"]; // Should be this format based on your query
+        
+        console.log("User logged in:", {
+            id: user.id,
+            name: user.name,
+            categoryId: user["usercategory.id"]
+        }); // Add this for debugging
+        
         return res.redirect("/");
     }
 

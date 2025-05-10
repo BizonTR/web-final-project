@@ -215,6 +215,13 @@ exports.listUser = async (req, res, next) => {
         });
 
         const totalPages = Math.ceil(count / itemsPerPage);
+        
+        // Use the global online users array instead of sessionStore.all
+        // This array is populated by trackOnlineUsers middleware
+        const onlineUsers = global.onlineUsers || [];
+        
+        // Convert any string IDs to numbers for consistent comparison
+        const onlineUserIds = onlineUsers.map(id => parseInt(id));
 
         res.render("admin/list-user", {
             title: "Kullanıcı Listele",
@@ -223,6 +230,8 @@ exports.listUser = async (req, res, next) => {
             searchQuery,
             currentPage,
             totalPages,
+            onlineUsers: onlineUserIds,
+            session: req.session
         });
     } catch (err) {
         next(err);
@@ -295,6 +304,18 @@ exports.banUser = async (req, res, next) => {
             return res.redirect("/admin/list/users");
         }
         
+        // Moderatör, Süper Admin'i banlayamaz
+        if (req.session.usercategoryId === 2 && user.usercategoryId === 1) {
+            req.session.message = { text: "Süper Admin'i banlayamazsınız!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Moderatör, Admin'i banlayamaz
+        if (req.session.usercategoryId === 2 && user.usercategoryId === 1) {
+            req.session.message = { text: "Admin'i banlayamazsınız!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
         // Mevcut aktif banı deaktif et (varsa)
         await UserBan.update(
             { isActive: false },
@@ -344,9 +365,27 @@ exports.changeUserRole = async (req, res, next) => {
             return res.redirect("/admin/list/users");
         }
         
-        // Admin kendisini normal kullanıcı yapamamalı
+        // Süper Admin kendisini normal kullanıcı yapamamalı
         if (parseInt(userId) === req.session.userid && roleId !== "1") {
             req.session.message = { text: "Kendi admin yetkilerinizi kaldıramazsınız!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Moderatör, Süper Admin'i değiştiremez
+        if (req.session.usercategoryId === 2 && user.usercategoryId === 1) {
+            req.session.message = { text: "Süper Admin'in rolünü değiştiremezsiniz!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Moderatör, Admin'i değiştiremez
+        if (req.session.usercategoryId === 2 && user.usercategoryId === 1) {
+            req.session.message = { text: "Admin'in rolünü değiştiremezsiniz!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Moderatör sadece normal kullanıcı ve moderatör rolü atayabilir
+        if (req.session.usercategoryId === 2 && roleId === "1") {
+            req.session.message = { text: "Admin rolü atayamazsınız!", class: "danger" };
             return res.redirect("/admin/list/users");
         }
         
@@ -432,6 +471,18 @@ exports.deleteUser = async (req, res, next) => {
         // Admin kendini silememeli
         if (parseInt(userId) === req.session.userid) {
             req.session.message = { text: "Kendinizi silemezsiniz!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Moderatör, Süper Admin'i silemez
+        if (req.session.usercategoryId === 2 && user.usercategoryId === 1) {
+            req.session.message = { text: "Süper Admin'i silemezsiniz!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Moderatör, Admin'i silemez
+        if (req.session.usercategoryId === 2 && user.usercategoryId === 1) {
+            req.session.message = { text: "Admin'i silemezsiniz!", class: "danger" };
             return res.redirect("/admin/list/users");
         }
         

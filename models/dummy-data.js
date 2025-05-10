@@ -39,4 +39,26 @@ async function populate() {
     }
 }
 
+// userCategory verilerini güncelleyelim
+const userData = async () => {
+    const count = await userCategory.count();
+    if (count === 0) {
+        await userCategory.bulkCreate([
+            { categoryname: "Süper Admin" }, // ID=1
+            { categoryname: "Moderatör" },  // ID=2
+            { categoryname: "Normal Kullanıcı" } // ID=3
+        ]);
+
+        // İlk kullanıcı olarak süper admin oluştur
+        const hashedPassword = await bcrypt.hash("admin", 10);
+        await Users.create({
+            name: "Admin",
+            surname: "User",
+            email: "admin@example.com",
+            password: hashedPassword,
+            usercategoryId: 1 // Süper Admin
+        });
+    }
+};
+
 module.exports = populate;

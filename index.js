@@ -39,10 +39,14 @@ app.use(express.static(path.join(__dirname, "public")));
 // fakat eğer bir JSON nesnesi olarak ele alınması istenirse, extended: true parametresi ile kullanmak gerekir.
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(configSession);
-app.use(locals);
+app.use(locals); // This should be your locals middleware
 
 // Middleware'i ekleyelim
 const checkBan = require("./middleware/checkBan");
+const trackOnlineUsers = require("./middleware/trackOnlineUsers");
+app.use(configSession);
+app.use(locals);
+app.use(trackOnlineUsers); // Add this line
 app.use(checkBan); // Ban kontrolü için ekliyoruz
 
 // ---routes

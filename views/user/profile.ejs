@@ -32,8 +32,10 @@
             <% } %>
         <% } %>
 
-        <% if (isAdmin && user.id === userid) { %>
-            <a href="/admin" class="btn btn-secondary mt-3">Admin Panel</a>
+        <% if (user.id === userid) { %>
+            <% if (session.usercategoryId === 1 || session.usercategoryId === 2) { %>
+                <a href="/admin" class="btn btn-secondary mt-3">Admin Panel</a>
+            <% } %>
         <% } %>
     </div>
 
