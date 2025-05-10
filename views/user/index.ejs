@@ -2,30 +2,34 @@
 <html lang="en">
 <%- include('../partials/head') %>
 <body>
-    <div class="container"> <!-- En dışa alındı -->
-        <div class="d-flex" id="wrapper">
-            <div id="page-content-wrapper">
-                <h1 class="mt-4"><%= contentTitle %></h1>
+    <div class="container">
+        <h1 class="mt-4"><%= contentTitle %></h1>
 
-                <!-- Search and Pagination -->
-                <%- include('../partials/search-pagination', {
-                    searchAction: '/user',
-                    searchQuery: searchQuery,
-                    currentPage: currentPage,
-                    totalPages: totalPages
-                }) %>
+        <!-- Search and Pagination -->
+        <%- include('../partials/search-pagination', {
+            searchAction: '/user',
+            searchQuery: searchQuery,
+            currentPage: currentPage,
+            totalPages: totalPages
+        }) %>
 
-                <!-- Game List -->
-                <div class="row">
-                    <% games.forEach(game => { %>
-                        <div class="col-12 col-sm-6 col-md-4 mb-3">
-                            <a href="/user/game/<%= game.id %>" class="text-decoration-none d-block p-3 border rounded">
-                                <%= game.title %>
-                            </a>
+        <!-- Game List -->
+        <div class="row">
+            <% games.forEach(game => { %>
+                <div class="col-12 col-sm-6 col-md-4 mb-4">
+                    <a href="/user/game/<%= game.id %>" class="text-decoration-none">
+                        <div class="card h-100">
+                            <img src="<%= game.url %>" class="card-img-top" alt="<%= game.title %>">
+                            <div class="card-body">
+                                <h5 class="card-title text-dark"><%= game.title %></h5>
+                                <p class="card-text text-dark">
+                                    <%= game.description.length > 100 ? game.description.substring(0, 100) + '...' : game.description %>
+                                </p>
+                            </div>
                         </div>
-                    <% }) %>
+                    </a>
                 </div>
-            </div>
+            <% }) %>
         </div>
     </div>
     <%- include('../partials/script') %>
