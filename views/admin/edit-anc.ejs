@@ -60,6 +60,14 @@
                                 </div>
                             </div>
                         </form>
+                        <form action="/admin/add-game-images" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="gameId" value="<%= data.id %>">
+                            <div class="mb-3">
+                                <label for="images" class="form-label">Resim Yükle</label>
+                                <input type="file" name="images" id="images" class="form-control" multiple>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Resimleri Yükle</button>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -10,6 +10,17 @@
         </div>
         <p><strong>Description:</strong> <%= game.description %></p>
         <p><strong>Active:</strong> <%= game.isActive ? "Yes" : "No" %></p>
+
+        <!-- Resim Galerisi -->
+        <h3>Resim Galerisi</h3>
+        <div class="row">
+            <% gameImages.forEach(image => { %>
+                <div class="col-6 col-md-4 mb-3">
+                    <img src="<%= image.imagePath %>" alt="Game Image" class="img-fluid rounded shadow-sm">
+                </div>
+            <% }) %>
+        </div>
+
         <a href="/" class="btn btn-primary mt-3">Back to Games</a>
     </div>
     <%- include('../partials/script') %>

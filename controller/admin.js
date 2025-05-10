@@ -4,6 +4,8 @@ const userCategory = require("../models/usercategory");
 const bcrypt = require("bcrypt");
 const slugField = require("../helpers/slugfield");
 const { Op } = require("sequelize");
+const GameImages = require("../models/gameimages");
+const path = require("path");
 
 exports.homePage = (req, res, next) => {
     res.render("admin/index", { title: "Ana sayfa", contentTitle: "Admin Home Page" });
@@ -194,6 +196,25 @@ exports.listUser = async (req, res, next) => {
             currentPage,
             totalPages,
         });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.post_addGameImages = async (req, res, next) => {
+    const gameId = req.body.gameId;
+    const files = req.files;
+
+    try {
+        if (files && files.length > 0) {
+            const imagePaths = files.map((file) => ({
+                imagePath: `/images/${file.filename}`,
+                gameId: gameId,
+            }));
+
+            await GameImages.bulkCreate(imagePaths);
+        }
+        res.redirect(`/admin/edit/game/${gameId}`);
     } catch (err) {
         next(err);
     }

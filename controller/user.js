@@ -6,6 +6,7 @@ const Users = require("../models/users");
 const Friendship = require("../models/friendship");
 const FriendRequest = require("../models/friendrequest");
 const { Op } = require("sequelize");
+const GameImages = require("../models/gameimages");
 
 exports.userHome=async(req,res,next)=>{ //ana sayfa
     try{
@@ -69,6 +70,8 @@ exports.getGameDetails = async (req, res, next) => {
     const id = req.params.id;
     try {
         const game = await Game.findByPk(id);
+        const gameImages = await GameImages.findAll({ where: { gameId: id } });
+
         if (!game) {
             return res.status(404).render("admin/error", { 
                 title: "Error", 
@@ -76,10 +79,12 @@ exports.getGameDetails = async (req, res, next) => {
                 err: "Game not found" 
             });
         }
+
         res.render("user/game-details", { 
             title: game.title, 
             contentTitle: game.title, 
-            game 
+            game,
+            gameImages
         });
     } catch (err) {
         next(err);

@@ -15,6 +15,7 @@ const Users = require("./models/users");
 const userCategory = require("./models/usercategory");
 const Friendship = require("./models/friendship");
 const FriendRequest = require("./models/friendrequest");
+const GameImages = require("./models/gameimages");
 const app = express();
 
 // EJS Ayarları
@@ -28,6 +29,7 @@ app.set("layout", "layout"); // Varsayılan layout dosyası views/layout.ejs ola
 app.use('/static', express.static(path.join(__dirname, 'public')));
 // app.use("/ckeditor",express.static(path.join(__dirname,"node_modules/@ckeditor")))
 app.use(express.static(path.join(__dirname, "node_modules")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // middleware
 // Gelen verilerin sadece string olarak ele alnıması istenirse, extended: false özelliği kullanılır, 
@@ -74,6 +76,9 @@ Users.hasMany(Friendship, { foreignKey: "friendId" });
 
 Users.hasMany(FriendRequest, { foreignKey: "senderId" });
 Users.hasMany(FriendRequest, { foreignKey: "receiverId" });
+
+Game.hasMany(GameImages, { foreignKey: "gameId", onDelete: "CASCADE" });
+GameImages.belongsTo(Game);
 
 // uygulanması
 // --await çağrıları mutlaka async fonnksiyon içinde olmalıdır.

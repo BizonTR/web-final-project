@@ -2,6 +2,7 @@ const express = require("express");
 const adminController = require("../controller/admin");
 const isAuth = require("../middleware/isAuth");
 const isAdmin = require("../middleware/isAdmin"); // Yeni middleware
+const upload = require("../middleware/upload");
 
 router = express.Router();
 
@@ -17,6 +18,8 @@ router.post("/edit/game/:id", isAuth, isAdmin, adminController.post_editGame);
 
 router.get("/delete/game/:id", isAuth, isAdmin, adminController.get_deleteGame);
 router.post("/delete/game", isAuth, isAdmin, adminController.post_deleteGame);
+
+router.post("/add-game-images", upload.array("images", 10), isAuth, isAdmin, adminController.post_addGameImages);
 
 router.get("/list/users", adminController.listUser);
 
