@@ -6,6 +6,8 @@ const slugField = require("../helpers/slugfield");
 const { Op } = require("sequelize");
 const GameImages = require("../models/gameimages");
 const path = require("path");
+const fs = require("fs");
+const UserBan = require("../models/userban");
 
 exports.homePage = (req, res, next) => {
     res.render("admin/index", { title: "Ana sayfa", contentTitle: "Admin Home Page" });
@@ -19,18 +21,30 @@ exports.post_addGame = async (req, res, next) => {
     const body = req.body;
     const isActive = body.isActive ? true : false;
     const userid = req.session.userid;
+    const files = req.files;
+
     try {
-        await Game.create({
+        const game = await Game.create({
             title: body.title,
             description: body.explain,
             isActive: isActive,
             userId: userid,
             url: slugField(body.title),
         });
+
+        if (files && files.length > 0) {
+            const imagePaths = files.map((file) => ({
+                imagePath: `/images/${file.filename}`,
+                gameId: game.id,
+            }));
+
+            await GameImages.bulkCreate(imagePaths);
+        }
+
+        res.redirect("/admin/list/game");
     } catch (err) {
-        return next(err);
+        next(err);
     }
-    res.redirect("/admin/list/game");
 };
 
 exports.listGame = async (req, res, next) => {
@@ -69,14 +83,18 @@ exports.listGame = async (req, res, next) => {
 
 exports.get_editGame = async (req, res, next) => {
     try {
-        const selectedData = await Game.findAll({
-            where: { id: req.params.id },
-            raw: true,
+        const selectedData = await Game.findByPk(req.params.id, {
+            include: [GameImages], // GameImages ile ilişkili resimleri al
         });
 
         const users = await Users.findAll({ raw: true });
 
-        res.render("admin/edit-anc", { title: "Oyun Düzenle", contentTitle: "Edit Game", data: selectedData[0], users: users }); // `anc` yerine `game`
+        res.render("admin/edit-anc", {
+            title: "Oyun Düzenle",
+            contentTitle: "Edit Game",
+            data: selectedData, // Oyun ve ilişkili resimleri gönder
+            users: users,
+        });
     } catch (err) {
         return next(err);
     }
@@ -161,12 +179,11 @@ exports.post_addUser = async (req, res, next) => {
 };
 
 exports.listUser = async (req, res, next) => {
-    const searchQuery = req.query.search || ""; // Arama sorgusu
-    const currentPage = parseInt(req.query.page) || 1; // Mevcut sayfa
-    const itemsPerPage = 5; // Sayfa başına gösterilecek kullanıcı sayısı
+    const searchQuery = req.query.search || ""; 
+    const currentPage = parseInt(req.query.page) || 1;
+    const itemsPerPage = 5;
 
     try {
-        // Arama sorgusunu dinamik olarak oluştur
         const searchConditions = {
             [Op.or]: [
                 { name: { [Op.like]: `%${searchQuery}%` } },
@@ -175,13 +192,24 @@ exports.listUser = async (req, res, next) => {
             ],
         };
 
-        // Kullanıcıları filtrele ve sayfalama uygula
         const { count, rows } = await Users.findAndCountAll({
             where: searchConditions,
-            include: {
-                model: userCategory,
-                attributes: ["categoryname"],
-            },
+            include: [
+                {
+                    model: userCategory,
+                    attributes: ["id", "categoryname"],
+                },
+                {
+                    model: UserBan,
+                    as: "userbans",
+                    attributes: ["id", "reason", "bannedUntil", "isActive"],
+                    where: { isActive: true },
+                    required: false, // LEFT JOIN için
+                    // Son aktif banı al
+                    order: [["createdAt", "DESC"]],
+                    limit: 1
+                }
+            ],
             limit: itemsPerPage,
             offset: (currentPage - 1) * itemsPerPage,
         });
@@ -208,11 +236,11 @@ exports.post_addGameImages = async (req, res, next) => {
     try {
         if (files && files.length > 0) {
             const imagePaths = files.map((file) => ({
-                imagePath: `/images/${file.filename}`,
+                imagePath: `/images/${file.filename}`, // Resim yolu
                 gameId: gameId,
             }));
 
-            await GameImages.bulkCreate(imagePaths);
+            await GameImages.bulkCreate(imagePaths); // Resimleri veritabanına kaydet
         }
         res.redirect(`/admin/edit/game/${gameId}`);
     } catch (err) {
@@ -220,6 +248,203 @@ exports.post_addGameImages = async (req, res, next) => {
     }
 };
 
+exports.deleteGameImage = async (req, res, next) => {
+    const imageId = req.params.id;
+
+    try {
+        const image = await GameImages.findByPk(imageId);
+
+        if (!image) {
+            return res.status(404).send("Resim bulunamadı.");
+        }
+
+        // Resim dosyasını sil
+        const filePath = path.join(__dirname, "../public", image.imagePath);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        // Veritabanından kaydı sil
+        await GameImages.destroy({ where: { id: imageId } });
+
+        res.redirect(`/admin/edit/game/${image.gameId}`);
+    } catch (err) {
+        next(err);
+    }
+};
+
 exports.ckeditor = (req, res, next) => {
     res.render("admin/ckeditorexample");
+};
+
+// Ban uygulama fonksiyonu
+exports.banUser = async (req, res, next) => {
+    try {
+        const { userId, banType, banDuration, reason } = req.body;
+        
+        // Kullanıcıyı kontrol et
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            req.session.message = { text: "Kullanıcı bulunamadı", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Admin kendini banlamamalı
+        if (parseInt(userId) === req.session.userid) {
+            req.session.message = { text: "Kendinizi banlayamazsınız!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Mevcut aktif banı deaktif et (varsa)
+        await UserBan.update(
+            { isActive: false },
+            { 
+                where: { 
+                    userId: userId,
+                    isActive: true
+                } 
+            }
+        );
+        
+        // Ban bitiş tarihi hesapla
+        let bannedUntil = null;
+        if (banType === 'temporary') {
+            bannedUntil = new Date();
+            bannedUntil.setDate(bannedUntil.getDate() + parseInt(banDuration));
+        }
+        
+        // Yeni ban oluştur
+        await UserBan.create({
+            userId: userId,
+            reason: reason,
+            bannedUntil: bannedUntil,
+            isActive: true
+        });
+        
+        req.session.message = { 
+            text: `${user.name} ${user.surname} kullanıcısı başarıyla banlandı`, 
+            class: "success" 
+        };
+        
+        return res.redirect("/admin/list/users");
+    } catch (err) {
+        return next(err);
+    }
+};
+
+// Kullanıcı rolünü değiştirme
+exports.changeUserRole = async (req, res, next) => {
+    try {
+        const { userId, roleId } = req.body;
+        
+        // Kullanıcıyı kontrol et
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            req.session.message = { text: "Kullanıcı bulunamadı", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Admin kendisini normal kullanıcı yapamamalı
+        if (parseInt(userId) === req.session.userid && roleId !== "1") {
+            req.session.message = { text: "Kendi admin yetkilerinizi kaldıramazsınız!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Kullanıcı rolünü güncelle
+        user.usercategoryId = roleId;
+        await user.save();
+        
+        req.session.message = { 
+            text: `${user.name} ${user.surname} kullanıcısının rolü başarıyla güncellendi`, 
+            class: "success" 
+        };
+        
+        return res.redirect("/admin/list/users");
+    } catch (err) {
+        return next(err);
+    }
+};
+
+// Kullanıcı banlarını görüntüleme
+exports.getUserBans = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        
+        // Kullanıcıyı kontrol et
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            req.session.message = { text: "Kullanıcı bulunamadı", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Kullanıcının tüm banlarını al
+        const bans = await UserBan.findAll({
+            where: { userId: userId },
+            order: [['createdAt', 'DESC']]
+        });
+        
+        res.render("admin/user-bans", {
+            title: "Kullanıcı Ban Geçmişi",
+            contentTitle: "Ban Geçmişi",
+            user: user,
+            bans: bans
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+// Kullanıcı banını kaldırma
+exports.removeBan = async (req, res, next) => {
+    try {
+        const { banId } = req.body;
+        
+        // Banı kontrol et
+        const ban = await UserBan.findByPk(banId);
+        if (!ban) {
+            req.session.message = { text: "Ban kaydı bulunamadı", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Banı deaktif et
+        ban.isActive = false;
+        await ban.save();
+        
+        req.session.message = { text: "Ban başarıyla kaldırıldı", class: "success" };
+        return res.redirect(`/admin/user-bans/${ban.userId}`);
+    } catch (err) {
+        return next(err);
+    }
+};
+
+// Kullanıcı silme işlemi
+exports.deleteUser = async (req, res, next) => {
+    try {
+        const userId = req.body.userId;
+        
+        // Kullanıcıyı kontrol et
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            req.session.message = { text: "Kullanıcı bulunamadı", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Admin kendini silememeli
+        if (parseInt(userId) === req.session.userid) {
+            req.session.message = { text: "Kendinizi silemezsiniz!", class: "danger" };
+            return res.redirect("/admin/list/users");
+        }
+        
+        // Kullanıcıyı sil
+        await user.destroy();
+        
+        req.session.message = { 
+            text: `${user.name} ${user.surname} kullanıcısı başarıyla silindi`, 
+            class: "success" 
+        };
+        
+        return res.redirect("/admin/list/users");
+    } catch (err) {
+        return next(err);
+    }
 };

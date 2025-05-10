@@ -68,6 +68,25 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Resimleri Yükle</button>
                         </form>
+                        <h3>Yüklenen Resimler</h3>
+                        <div class="row">
+                            <% if (data.GameImages && data.GameImages.length > 0) { %>
+                                <% data.GameImages.forEach(image => { %>
+                                    <div class="col-6 col-md-4 mb-3">
+                                        <div class="card">
+                                            <img src="<%= image.imagePath %>" alt="Game Image" class="card-img-top">
+                                            <div class="card-body text-center">
+                                                <form action="/admin/delete-game-image/<%= image.id %>" method="POST">
+                                                    <button type="submit" class="btn btn-danger">Sil</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <p>Henüz resim yüklenmedi.</p>
+                            <% } %>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -8,6 +8,9 @@ const configSession = require("./middleware/config_Session");
 const locals = require("./middleware/local");
 const notFound = require("./middleware/notFound");
 
+// Model'i ekleyelim
+const UserBan = require("./models/userban");
+
 const db = require("./data/db");
 const dummydata = require("./models/dummy-data");
 const Game = require("./models/game"); // Anc yerine Game kullanıldı
@@ -37,6 +40,10 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(configSession);
 app.use(locals);
+
+// Middleware'i ekleyelim
+const checkBan = require("./middleware/checkBan");
+app.use(checkBan); // Ban kontrolü için ekliyoruz
 
 // ---routes
 const adminRouter = require("./routes/admin");
@@ -79,6 +86,14 @@ Users.hasMany(FriendRequest, { foreignKey: "receiverId" });
 
 Game.hasMany(GameImages, { foreignKey: "gameId", onDelete: "CASCADE" });
 GameImages.belongsTo(Game);
+
+// İlişkileri ekleyelim
+Users.hasMany(UserBan, {
+    foreignKey: "userId",
+    as: "userbans", // views/admin/list-user.ejs'de kullandığımız alias
+    onDelete: "CASCADE"
+});
+UserBan.belongsTo(Users);
 
 // uygulanması
 // --await çağrıları mutlaka async fonnksiyon içinde olmalıdır.

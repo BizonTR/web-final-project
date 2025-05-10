@@ -21,24 +21,66 @@
                     currentPage: currentPage,
                     totalPages: totalPages
                 }) %>
-                <table class="table table-striped table-hover table-responsive">
+                <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>ID</th>
                             <th>Ad</th>
                             <th>Soyad</th>
                             <th>Email</th>
                             <th>Kategori</th>
+                            <th>Durum</th>
+                            <th class="text-end">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% data.forEach((user, index) => { %>
+                        <% data.forEach(element => { %>
                             <tr>
-                                <td><%= (currentPage - 1) * 5 + index + 1 %></td>
-                                <td><%= user.name %></td>
-                                <td><%= user.surname %></td>
-                                <td><%= user.email %></td>
-                                <td><%= user.usercategory.categoryname %></td>
+                                <td><%= element.id %></td>
+                                <td><%= element.name %></td>
+                                <td><%= element.surname %></td>
+                                <td><%= element.email %></td>
+                                <td><%= element['usercategory.categoryname'] %></td>
+                                <td>
+                                    <% if (element.userbans && element.userbans.length > 0 && element.userbans[0].isActive) { %>
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-ban"></i> Banlı
+                                            <% if (element.userbans[0].bannedUntil) { %>
+                                                (<%=  new Date(element.userbans[0].bannedUntil).toLocaleDateString('tr-TR') %>'e kadar)
+                                            <% } %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-success">Aktif</span>
+                                    <% } %>
+                                    <a href="/admin/user-bans/<%= element.id %>" class="badge bg-info text-decoration-none">
+                                        <i class="fas fa-history"></i> Geçmiş
+                                    </a>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <div class="btn-group">
+                                        <a href="/admin/edit/user/<%= element.id %>" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-edit"></i> Düzenle
+                                        </a>
+                                        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#banModal" 
+                                            data-id="<%= element.id %>" 
+                                            data-name="<%= element.name %> <%= element.surname %>">
+                                            <i class="fas fa-ban"></i> Ban At
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#roleModal" 
+                                            data-id="<%= element.id %>" 
+                                            data-name="<%= element.name %> <%= element.surname %>"
+                                            data-role="<%= element['usercategory.id'] %>">
+                                            <i class="fas fa-user-tag"></i> Rol
+                                        </button>
+                                        <a href="/admin/delete/user/<%= element.id %>" class="btn btn-danger btn-sm delete-btn" 
+                                            data-id="<%= element.id %>" 
+                                            data-name="<%= element.name %> <%= element.surname %>" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal">
+                                            <i class="fas fa-trash"></i> Sil
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                         <% }) %>
                     </tbody>
@@ -47,5 +89,163 @@
         </div>
     </div>
     <%- include('../partials/script') %>
+
+    <!-- Ban Modal -->
+    <div class="modal fade" id="banModal" tabindex="-1" aria-labelledby="banModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="banModalLabel">Kullanıcıyı Askıya Al</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/admin/ban-user" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="banUserId" name="userId">
+                        
+                        <div class="mb-3">
+                            <p><strong>Kullanıcı:</strong> <span id="banUserName"></span></p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="banType" class="form-label">Ban Türü</label>
+                            <select class="form-select" id="banType" name="banType">
+                                <option value="temporary">Süreli Ban</option>
+                                <option value="permanent">Süresiz Ban</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="banDurationDiv">
+                            <label for="banDuration" class="form-label">Ban Süresi (Gün)</label>
+                            <input type="number" class="form-control" id="banDuration" name="banDuration" min="1" value="1">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="banReason" class="form-label">Ban Nedeni</label>
+                            <textarea class="form-control" id="banReason" name="reason" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-warning">Ban Uygula</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rol Değiştirme Modal -->
+    <div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="roleModalLabel">Kullanıcı Rolü Değiştir</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/admin/change-role" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="roleUserId" name="userId">
+                        
+                        <div class="mb-3">
+                            <p><strong>Kullanıcı:</strong> <span id="roleUserName"></span></p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">Yeni Rol</label>
+                            <select class="form-select" id="newRole" name="roleId">
+                                <option value="1">Admin</option>
+                                <option value="2">Editor</option>
+                                <option value="3">Normal Kullanıcı</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-info">Rolü Değiştir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Kullanıcıyı Sil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/admin/delete/user" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="deleteUserId" name="userId">
+                        
+                        <div class="mb-3">
+                            <p><strong>Kullanıcı:</strong> <span id="deleteUserName"></span></p>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-danger">Kullanıcıyı Sil</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ban Modal için script
+        document.addEventListener('DOMContentLoaded', function() {
+            const banModal = document.getElementById('banModal');
+            if (banModal) {
+                banModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const userId = button.getAttribute('data-id');
+                    const userName = button.getAttribute('data-name');
+                    
+                    document.getElementById('banUserId').value = userId;
+                    document.getElementById('banUserName').textContent = userName;
+                });
+                
+                // Ban türü değiştiğinde süre alanını göster/gizle
+                document.getElementById('banType').addEventListener('change', function() {
+                    const durationDiv = document.getElementById('banDurationDiv');
+                    durationDiv.style.display = this.value === 'permanent' ? 'none' : 'block';
+                });
+            }
+            
+            // Rol Modal için script
+            const roleModal = document.getElementById('roleModal');
+            if (roleModal) {
+                roleModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const userId = button.getAttribute('data-id');
+                    const userName = button.getAttribute('data-name');
+                    const currentRole = button.getAttribute('data-role');
+                    
+                    document.getElementById('roleUserId').value = userId;
+                    document.getElementById('roleUserName').textContent = userName;
+                    document.getElementById('newRole').value = currentRole;
+                });
+            }
+
+            // Delete Modal için script
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const userId = button.getAttribute('data-id');
+                    const userName = button.getAttribute('data-name');
+                    
+                    document.getElementById('deleteUserId').value = userId;
+                    document.getElementById('deleteUserName').textContent = userName;
+                });
+            }
+        });
+    </script>
 </body>
 </html>

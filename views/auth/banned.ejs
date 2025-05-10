@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="tr">
+<%- include('../partials/head') %>
+<body>
+    <div class="container text-center mt-5">
+        <div class="card mx-auto" style="max-width: 500px;">
+            <div class="card-header bg-danger text-white">
+                <h1 class="display-6">Hesabınız Askıya Alındı</h1>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <i class="fas fa-ban fa-4x text-danger mb-3"></i>
+                    <p class="lead">Hesabınıza erişiminiz geçici olarak kısıtlanmıştır.</p>
+                </div>
+                
+                <div class="alert alert-secondary">
+                    <h5>Askıya Alınma Nedeni:</h5>
+                    <p><%= reason %></p>
+                </div>
+                
+                <% if (bannedUntil) { %>
+                    <div class="alert alert-info">
+                        <h5>Askı Bitiş Tarihi:</h5>
+                        <p><%= new Date(bannedUntil).toLocaleString('tr-TR') %></p>
+                        <small class="text-muted">Bu tarihten sonra hesabınıza tekrar giriş yapabilirsiniz.</small>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-warning">
+                        <h5>Süresiz Askı</h5>
+                        <p>Hesabınız süresiz olarak askıya alınmıştır.</p>
+                    </div>
+                <% } %>
+                
+                <p class="mt-4">Eğer bu durumun bir hata olduğunu düşünüyorsanız, lütfen site yöneticileriyle iletişime geçin.</p>
+                <a href="/" class="btn btn-secondary mt-3">Ana Sayfaya Dön</a>
+            </div>
+        </div>
+    </div>
+    <%- include('../partials/script') %>
+</body>
+</html>
