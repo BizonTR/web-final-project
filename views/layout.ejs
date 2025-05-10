@@ -92,6 +92,28 @@
     .container {
       max-width: 960px;
     }
+
+    @media (max-width: 768px) {
+      main.container {
+        padding: 1.5rem;
+        box-shadow: none;
+      }
+
+      ul {
+        padding: 0;
+        list-style: none;
+      }
+
+      ul li {
+        margin-bottom: 10px;
+        word-wrap: break-word; /* Uzun metinlerin taşmasını önler */
+      }
+
+      .container {
+        width: 100%;
+        padding: 0 15px;
+      }
+    }
   </style>
 </head>
 

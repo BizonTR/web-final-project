@@ -2,11 +2,9 @@
 <html lang="en">
 <%- include('../partials/head') %>
 <body>
-    <div class="d-flex" id="wrapper">
-        <!-- Page content wrapper -->
-        <div id="page-content-wrapper">
-            <!-- Page content -->
-            <div class="container-fluid">
+    <div class="container"> <!-- En dışa alındı -->
+        <div class="d-flex" id="wrapper">
+            <div id="page-content-wrapper">
                 <h1 class="mt-4"><%= contentTitle %></h1>
 
                 <!-- Search and Pagination -->
@@ -18,13 +16,15 @@
                 }) %>
 
                 <!-- Game List -->
-                <ul>
+                <div class="row">
                     <% games.forEach(game => { %>
-                        <li>
-                            <a href="/user/game/<%= game.id %>"><%= game.title %></a>
-                        </li>
+                        <div class="col-12 col-sm-6 col-md-4 mb-3">
+                            <a href="/user/game/<%= game.id %>" class="text-decoration-none d-block p-3 border rounded">
+                                <%= game.title %>
+                            </a>
+                        </div>
                     <% }) %>
-                </ul>
+                </div>
             </div>
         </div>
     </div>

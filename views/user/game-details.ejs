@@ -3,8 +3,10 @@
     <div class="container">
         <h1 class="mt-4"><%= contentTitle %></h1>
         <div class="mb-4 text-center">
-            <!-- Oyunun URL'sinden alınan resmi gösteriyoruz -->
-            <img src="<%= game.url %>" alt="<%= game.title %>" class="img-fluid rounded shadow-sm" style="max-width: 400px;">
+            <!-- Resmi bir container içine aldık ve responsive hale getirdik -->
+            <div class="img-container">
+                <img src="<%= game.url %>" alt="<%= game.title %>" class="img-fluid rounded shadow-sm">
+            </div>
         </div>
         <p><strong>Description:</strong> <%= game.description %></p>
         <p><strong>Active:</strong> <%= game.isActive ? "Yes" : "No" %></p>

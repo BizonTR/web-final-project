@@ -1,11 +1,11 @@
 <!-- filepath: views/partials/search-pagination.ejs -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex flex-column mb-3">
     <!-- Search Bar -->
-    <form method="GET" action="<%= searchAction %>" class="d-flex">
+    <form method="GET" action="<%= searchAction %>" class="d-flex flex-wrap mb-3">
         <input 
             type="text" 
             name="search" 
-            class="form-control me-2" 
+            class="form-control me-2 mb-2 mb-sm-0" 
             placeholder="Ara..." 
             value="<%= searchQuery || '' %>"
         >
@@ -13,8 +13,8 @@
     </form>
 
     <!-- Pagination -->
-    <nav>
-        <ul class="pagination">
+    <nav class="mt-2">
+        <ul class="pagination justify-content-center">
             <% if (currentPage > 1) { %>
                 <li class="page-item">
                     <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= searchQuery || '' %>">Önceki</a>
