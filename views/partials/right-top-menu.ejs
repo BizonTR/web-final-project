@@ -1,12 +1,21 @@
-<div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
-        <% if (isAuth) { %>
-            <li class="nav-item"><a class="nav-link" href="/friend/requests">Gelen İstekler</a></li>
-            <li class="nav-item"><a class="nav-link" href="/user/profile/<%= userid %>">Profil</a></li>
-            <li class="nav-item"><a class="nav-link" href="/auth/logout">Çıkış Yap</a></li>
-            <li class="nav-item mt-2"><%= fullname %></li>
-        <% } else { %>
-            <li class="nav-item"><a class="nav-link" href="/auth/login">Giriş Yap</a></li>
-        <% } %>
-    </ul>
-</div>
+<!-- filepath: views/partials/right-top-menu.ejs -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Site Adı</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <% if (isAuth) { %>
+                    <li class="nav-item"><a class="nav-link" href="/friend/requests">Gelen İstekler</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/profile/<%= userid %>">Profil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/auth/logout">Çıkış Yap</a></li>
+                    <li class="nav-item mt-2 text-light"><%= fullname %></li>
+                <% } else { %>
+                    <li class="nav-item"><a class="nav-link" href="/auth/login">Giriş Yap</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+</nav>

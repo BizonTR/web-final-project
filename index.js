@@ -1,5 +1,6 @@
 const data = require("./data/dataarray");
 const express = require("express");
+const expressLayouts = require("express-ejs-layouts");
 const path = require('path');
 const bodyParser = require('body-parser'); // post edilen verileri almak için kullanılır.
 const session = require('express-session'); // sadece import etmek yeterli değil. middleware klasörü içinde tanımlı config 'de kullanılmalıdır.
@@ -16,8 +17,12 @@ const Friendship = require("./models/friendship");
 const FriendRequest = require("./models/friendrequest");
 const app = express();
 
-// set view engine
-app.set('view engine', 'ejs');
+// EJS Ayarları
+app.set("view engine", "ejs");
+app.use(expressLayouts); // express-ejs-layouts'u kullan
+
+// Layout Dosyasını Belirleme
+app.set("layout", "layout"); // Varsayılan layout dosyası views/layout.ejs olacak
 
 // ---Static
 app.use('/static', express.static(path.join(__dirname, 'public')));
