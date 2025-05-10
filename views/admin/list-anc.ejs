@@ -1,105 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <%- include('../partials/head') %>
-    <body>
-        <div class="d-flex" id="wrapper">
-            <!-- Sidebar-->
-            <%- include('../partials/Sidebar') %>
-            <!-- Page content wrapper-->
-            <div id="page-content-wrapper">
-                <!-- Top navigation-->
-                <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-                    <div class="container-fluid">
-                        <button class="btn btn-primary" id="sidebarToggle">Toggle Menu</button>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-                        <%- include('../partials/right-top-menu') %>
-                    </div>
-                </nav>
-                <!-- Page content-->
-                <div class="container-fluid">
-                    <h1 class="mt-4"><%= contentTitle %></h1>
-                    <table class="table table-striped table-hover table-responsive">
+<style>
+    /* Flex children overflow fix */
+    #wrapper, #page-content-wrapper {
+        min-width: 0;
+    }
+
+    /* Uzun içerikleri kesmek için */
+    td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    /* Responsive tabloda overflow-x kontrolü */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    /* Konteyner overflow fix */
+    .container-fluid {
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+</style>
+
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <%- include('../partials/sidebar') %>
+
+        <!-- Page content wrapper -->
+        <div id="page-content-wrapper">
+
+            <!-- Page content -->
+            <div class="container-fluid px-2">
+                <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                    ☰ Menü
+                </button>
+                <h1 class="mt-4"><%= contentTitle %></h1>
+                <%- include('../partials/search-pagination', {
+                    searchAction: '/admin/list/game',
+                    searchQuery: searchQuery,
+                    currentPage: currentPage,
+                    totalPages: totalPages
+                }) %>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
                         <thead>
-                          <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Notice ID</th>
-                            <th scope="col">Title</th>
-                            <th scope="col">Explain</th>
-                            <th scope="col">User Name</th>
-                            <th scope="col">isActive</th>
-                            
-                            <th scope="col" class="text-end">Processing</th>
-                          </tr>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Notice ID</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Explain</th>
+                                <th scope="col">User Name</th>
+                                <th scope="col">isActive</th>
+                                <th scope="col" class="text-end">Processing</th>
+                            </tr>
                         </thead>
                         <tbody>
-                          <% data.forEach((element,index) => { %>
-                            <tr>
-                              <th scope="row"><%= index+1 %></th>
-                              <td><%=element.id%></td>
-                              <td><%=element.title%></td>
-                              <td><%=element.exp %></td>
-                              <td><%=element.user.name+" "+element.user.surname %></td>
-                              <td>
-                                  <input type="checkbox" disabled <%=element.isactive?"checked":null%>>
-                              </td>
-                              <td class="text-end text-nowrap">
-                                  <a href="/admin/edit/game/<%=element.id %>" class="btn btn-primary">Edit</a>
-                                  <a href="/admin/delete/game/<%=element.id %>" class="delete-btn btn btn-danger" data-id="<%=element.id %>" data-title="<%=element.title %>" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete</a>                
-                              </td>
-                            </tr>
-                          <% }) %>
+                            <% data.forEach((element, index) => { %>
+                                <tr>
+                                    <th scope="row"><%= index + 1 %></th>
+                                    <td><%= element.id %></td>
+                                    <td><%= element.title %></td>
+                                    <td><%= element.exp %></td>
+                                    <td><%= element.user.name + " " + element.user.surname %></td>
+                                    <td>
+                                        <input type="checkbox" disabled <%= element.isactive ? "checked" : null %>>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <a href="/admin/edit/game/<%= element.id %>" class="btn btn-primary">Edit</a>
+                                        <a href="/admin/delete/game/<%= element.id %>" class="delete-btn btn btn-danger" data-id="<%= element.id %>" data-title="<%= element.title %>" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
                         </tbody>
-                      </table>       
-                      <%- include('../partials/search-pagination', {
-                          searchAction: '/admin/list/game',
-                          searchQuery: searchQuery,
-                          currentPage: currentPage,
-                          totalPages: totalPages
-                      }) %>
+                    </table>
                 </div>
             </div>
         </div>
+    </div>
+
     <%- include('../partials/script') %>
 
-
-
     <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Uyarı</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-  <form action="/admin/delete/game" method="post">
-      <div class="modal-body">
-        <p class="fw-bold">Anouncement ID:<label id="id" class="fw-semibold"></label></p>
-        <p class="fw-bold">Anouncement Title:<label id="title" class="fw-semibold"></label></p>
-        <p class="fw-bold">Kaydı silmek istediğinize emin misiniz?</p>
-        <input type="hidden" value="" id="gameid" name="gameid"> <!-- form üzerinde anounce id'yi taşır. anounce Id değeri aşağıdaki scriptte set edilir-->
-      </div>
-      <div class="modal-footer">
-        <a href="#" id="yes" class="btn btn-danger">Linkli Evet</a>
-        <button type="submit" class="btn btn-danger">Post Evet</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hayır</button>
-      </div>
-  </form>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Uyarı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/admin/delete/game" method="post">
+                    <div class="modal-body">
+                        <p class="fw-bold">Anouncement ID:<label id="id" class="fw-semibold"></label></p>
+                        <p class="fw-bold">Anouncement Title:<label id="title" class="fw-semibold"></label></p>
+                        <p class="fw-bold">Kaydı silmek istediğinize emin misiniz?</p>
+                        <input type="hidden" value="" id="gameid" name="gameid">
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" id="yes" class="btn btn-danger">Linkli Evet</a>
+                        <button type="submit" class="btn btn-danger">Post Evet</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hayır</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script>
-  $(function () {
-   $(".delete-btn").click(function (){//listedeki click botununa tıklandığında çalışacak jquery kodları
-     let id = $(this).data('id'); //delete butonu üzerinden data-id ve data-title attribute'leri ile bilgiler çekiliyor. 
-     let title = $(this).data('title');
-     $(".modal-body #id").text(id); //modalbox üzerindeki id id'li label'ın text'i set ediliyor
-     $(".modal-body #title").text(title); //modalbox üzerindeki title id'li label'ın text'i set ediliyor
-     $(".modal-footer #yes").attr("href","/admin/delete/game/"+id); //Linkli Evet butonunun href attribute'i set ediliyor
-     $(".modal-body #gameid").attr("value",id); //hidden input'un value değeri anouncemnet id'ye set ediliyor.
-   })
-  });
-</script>
-
-    </body>
+    <script>
+        $(function () {
+            $(".delete-btn").click(function () {
+                let id = $(this).data('id');
+                let title = $(this).data('title');
+                $(".modal-body #id").text(id);
+                $(".modal-body #title").text(title);
+                $(".modal-footer #yes").attr("href", "/admin/delete/game/" + id);
+                $(".modal-body #gameid").attr("value", id);
+            });
+        });
+    </script>
+</body>
 </html>
