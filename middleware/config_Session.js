@@ -1,21 +1,17 @@
 const session = require('express-session');  
-const db=require("../data/db");
-const SequelizeStore = require("connect-session-sequelize")(session.Store); //npm install connect-session-sequelize
+const db = require("../data/db");
+const SequelizeStore = require("connect-session-sequelize")(session.Store);
 
-const configSession=session({
-    //google->random guid olarak aratıp oluşturun
-    secret:"b985c1b3-6158-483b-af26-ead29962fef8", //oturum verilerinin şifrelenmesinde kullanılır
-    resave:false, //sadece session değiştiğinde güncelle
-    saveUninitialized:false, //her kullanıcı için session oluştur ya da oluşturma
-    cookie:{ //suncu belleğinde oluşturulan session id istemciye cookie olarak taşınır.
-       maxAge:1000*60*60*24 //istemciden 24 saat sonra silinsin
-                            //logout durumunda kodla silinebilir.
+const configSession = session({
+    secret: "b985c1b3-6158-483b-af26-ead29962fef8",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
     },
-    //veritabanında saklanacaksa ekleyin
-   store:new SequelizeStore({
-       db:db
+    store: new SequelizeStore({
+        db: db
     })
-}
-);
+});
 
-module.exports=configSession;
+module.exports = configSession;

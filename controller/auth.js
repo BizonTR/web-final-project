@@ -2,7 +2,7 @@
 const Users=require("../models/users")
 const session = require("express-session");
 const bcrypt = require('bcrypt');
-const userCategory = require("../models/usercategory");
+const userCategory = require("../models/userCategory");
 //const db=require("../data/db");
 
 exports.getLogin=(req,res,next)=>{
@@ -14,42 +14,48 @@ exports.getLogin=(req,res,next)=>{
 
 
 exports.postLogin = async (req, res, next) => {
-    const user = await Users.findOne({
-        where: { email: req.body.email },
-        include: { model: userCategory, attributes: ["id", "categoryname"] },
-        raw: true,
-    });
+    try {
+        const user = await Users.findOne({ 
+            where: { email: req.body.email },
+            include: [{ model: userCategory, attributes: ['id'] }] // Kullanıcı kategorisini dahil et
+        });
 
-    if (!user) {
-        req.session.message = { text: "Email hatalı", class: "warning" };
-        return res.redirect("login");
+        if (!user) {
+            return res.redirect('/auth/login');
+        }
+
+        const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+
+        if (isPasswordValid) {
+            req.session.isAuth = true;
+            req.session.userid = user.id; // Kullanıcı ID'sini session'a kaydet
+            req.session.fullname = `${user.name} ${user.surname}`;
+            req.session.usercategoryId = user.usercategoryId || user.usercategory.id; // Kullanıcı kategorisini session'a kaydet
+
+            console.log('User logged in:', {
+                id: user.id,
+                name: user.name,
+                categoryId: req.session.usercategoryId,
+            });
+
+            return res.redirect('/');
+        } else {
+            return res.redirect('/auth/login');
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        next(err);
     }
-
-    if (await bcrypt.compare(req.body.password, user.password)) {
-        // Make sure these session values are set correctly
-        req.session.isAuth = true;
-        req.session.userid = user.id;
-        req.session.fullname = user.name + " " + user.surname;
-        req.session.usercategoryId = user["usercategory.id"]; // Should be this format based on your query
-        
-        console.log("User logged in:", {
-            id: user.id,
-            name: user.name,
-            categoryId: user["usercategory.id"]
-        }); // Add this for debugging
-        
-        return res.redirect("/");
-    }
-
-    req.session.message = { text: "Şifre hatalı", class: "warning" };
-    return res.redirect("login");
 };
 
 
 exports.logout = async (req, res) => {
     try {
-        await req.session.destroy(); // Oturumu temizle
-        res.redirect("/auth/login"); // Giriş sayfasına yönlendir
+        // Store user ID before destroying session
+        const userId = req.session.userid;
+        
+        await req.session.destroy();
+        res.redirect("/auth/login");
     } catch (err) {
         console.error("Oturum kapatma sırasında hata:", err);
         res.status(500).send("Oturum kapatılamadı.");

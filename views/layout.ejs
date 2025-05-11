@@ -117,7 +117,8 @@
   </style>
 </head>
 
-<body>
+<!-- Kullanıcı ID'sini body üzerinde data-userid olarak tanımlayalım -->
+<body data-userid="<%= userid || '' %>">
   <div class="d-flex flex-column min-vh-100">
 
     <!-- Navbar -->
@@ -134,6 +135,9 @@
     <%- include('./partials/footer') %>
   </div>
 
+  <!-- Scriptler -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/template/js/scripts.js"></script>
   <%- include('./partials/script') %>
 </body>
 </html>

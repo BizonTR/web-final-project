@@ -7,6 +7,8 @@ const session = require('express-session'); // sadece import etmek yeterli deği
 const configSession = require("./middleware/config_Session");
 const locals = require("./middleware/local");
 const notFound = require("./middleware/notFound");
+const http = require('http'); // Add this for Socket.IO
+const socketIO = require('socket.io'); // Add Socket.IO
 
 // Model'i ekleyelim
 const UserBan = require("./models/userban");
@@ -15,11 +17,60 @@ const db = require("./data/db");
 const dummydata = require("./models/dummy-data");
 const Game = require("./models/game"); // Anc yerine Game kullanıldı
 const Users = require("./models/users");
-const userCategory = require("./models/usercategory");
+const userCategory = require("./models/userCategory");
 const Friendship = require("./models/friendship");
 const FriendRequest = require("./models/friendrequest");
 const GameImages = require("./models/gameimages");
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server);
+
+// Online kullanıcı haritası (userId -> socketId)
+const onlineUsers = new Map();
+
+// Socket.IO bağlantı yönetimi
+io.on('connection', (socket) => {
+    console.log('Yeni socket bağlantısı:', socket.id);
+
+    // Kullanıcı login olduğunda
+    socket.on('user-login', (userId) => {
+        console.log(`'user-login' olayı alındı. Kullanıcı ID: ${userId}`);
+        userId = parseInt(userId);
+
+        if (!isNaN(userId)) {
+            console.log(`Kullanıcı ${userId} socket ID: ${socket.id} ile bağlandı`);
+            onlineUsers.set(userId, socket.id);
+
+            // Güncel online kullanıcıları logla
+            console.log('Güncel online kullanıcılar:', Array.from(onlineUsers.keys()));
+
+            // Tüm istemcilere güncel online kullanıcı listesini gönder
+            io.emit('online-users-update', Array.from(onlineUsers.keys()));
+        } else {
+            console.error('Geçersiz kullanıcı ID:', userId);
+        }
+    });
+
+    // Socket bağlantısı koptuğunda
+    socket.on('disconnect', () => {
+        console.log('Socket bağlantısı koptu:', socket.id);
+
+        // Bağlantısı kopan kullanıcıyı bul ve listeden çıkar
+        for (const [userId, socketId] of onlineUsers.entries()) {
+            if (socketId === socket.id) {
+                onlineUsers.delete(userId);
+                console.log(`Kullanıcı ${userId} artık çevrimdışı`);
+
+                // Tüm istemcilere güncel online kullanıcı listesini gönder
+                io.emit('online-users-update', Array.from(onlineUsers.keys()));
+                break;
+            }
+        }
+    });
+});
+
+// onlineUsers'ı global olarak erişilebilir yap
+app.locals.getOnlineUsers = () => Array.from(onlineUsers.keys());
 
 // EJS Ayarları
 app.set("view engine", "ejs");
@@ -38,15 +89,16 @@ app.use(express.static(path.join(__dirname, "public")));
 // Gelen verilerin sadece string olarak ele alnıması istenirse, extended: false özelliği kullanılır, 
 // fakat eğer bir JSON nesnesi olarak ele alınması istenirse, extended: true parametresi ile kullanmak gerekir.
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(configSession);
-app.use(locals); // This should be your locals middleware
+app.use(configSession); // Session middleware
+app.use(locals); // Locals middleware
 
 // Middleware'i ekleyelim
 const checkBan = require("./middleware/checkBan");
 const trackOnlineUsers = require("./middleware/trackOnlineUsers");
 app.use(configSession);
 app.use(locals);
-app.use(trackOnlineUsers); // Add this line
+// Session-based online takibini kaldır veya devre dışı bırak
+// app.use(trackOnlineUsers); // Bu middleware'i kaldırın veya devre dışı bırakın
 app.use(checkBan); // Ban kontrolü için ekliyoruz
 
 // ---routes
@@ -118,8 +170,8 @@ app.use((err, req, res, next) => {
 
 app.use(notFound); // 404 sayfası için middleware
 
-app.listen(3000, () => {
-    console.log("Server running");
+server.listen(3000, () => {
+    console.log("Server port 3000 üzerinde çalışıyor");
 });
 
 

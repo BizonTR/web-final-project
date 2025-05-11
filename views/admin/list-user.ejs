@@ -60,12 +60,11 @@
                                         <span class="badge bg-info">Kullanıcı</span>
                                     <% } %>
                                 </td>
+                                <!-- Online/Offline durumu gösterge kolonunda -->
                                 <td>
-                                    <% if (onlineUsers && onlineUsers.includes(parseInt(element.id))) { %>
-                                        <span class="badge bg-success"><i class="fas fa-circle"></i> Online</span>
-                                    <% } else { %>
-                                        <span class="badge bg-secondary"><i class="fas fa-circle"></i> Offline</span>
-                                    <% } %>
+                                    <span data-user-status data-user-id="<%= element.id %>" class="badge <%= onlineUsers && onlineUsers.includes(parseInt(element.id)) ? 'bg-success' : 'bg-secondary' %>">
+                                        <i class="fas fa-circle"></i> <%= onlineUsers && onlineUsers.includes(parseInt(element.id)) ? 'Online' : 'Offline' %>
+                                    </span>
                                 </td>
                                 <td>
                                     <% if (element.userbans && element.userbans.length > 0 && element.userbans[0].isActive) { %>

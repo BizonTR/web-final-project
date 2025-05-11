@@ -1,6 +1,6 @@
 const Game = require("../models/game");
 const Users = require("../models/users");
-const userCategory = require("../models/usercategory");
+const userCategory = require("../models/userCategory");
 const bcrypt = require('bcrypt');
 
 async function populate() {
