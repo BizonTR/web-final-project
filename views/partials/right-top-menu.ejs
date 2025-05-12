@@ -7,14 +7,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <% if (isAuth) { %>
-                    <li class="nav-item"><a class="nav-link" href="/friend/requests">Gelen İstekler</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/user/profile/<%= userid %>">Profil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/auth/logout">Çıkış Yap</a></li>
-                    <li class="nav-item mt-2 text-light"><%= fullname %></li>
-                <% } else { %>
-                    <li class="nav-item"><a class="nav-link" href="/auth/login">Giriş Yap</a></li>
-                <% } %>
+                <!-- Navbar içeriği JavaScript ile dinamik olarak güncellenecek -->
             </ul>
         </div>
     </div>

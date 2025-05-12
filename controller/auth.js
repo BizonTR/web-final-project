@@ -2,7 +2,7 @@
 const Users=require("../models/users")
 const session = require("express-session");
 const bcrypt = require('bcrypt');
-const userCategory = require("../models/userCategory");
+const userCategory = require("../models/usercategory");
 //const db=require("../data/db");
 
 exports.getLogin=(req,res,next)=>{
