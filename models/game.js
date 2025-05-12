@@ -8,7 +8,7 @@ const Game = db.define("game", {
     },
     description: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
     },
     isActive: {
         type: DataTypes.BOOLEAN,

@@ -32,7 +32,16 @@ router.post("/remove-ban", isAuth, isAdmin, adminController.removeBan);
 // Sadece Süper Admin tarafından kullanılabilen işlemler
 router.post("/delete/user", isAuth, isAdmin, isSuperAdmin, adminController.deleteUser);
 
-router.post("/edit/game/:id", isAuth, isAdmin, upload.single("bannerImage"), adminController.post_editGame);
+router.post(
+    "/edit/game/:id",
+    isAuth,
+    isAdmin,
+    upload.fields([
+        { name: "bannerImage", maxCount: 1 }, // Tek bir banner resmi
+        { name: "galleryImages", maxCount: 10 }, // En fazla 10 galeri resmi
+    ]),
+    adminController.post_editGame
+);
 
 router.get("/delete/game/:id", isAuth, isAdmin, adminController.get_deleteGame);
 router.post("/delete/game", isAuth, isAdmin, adminController.post_deleteGame);
