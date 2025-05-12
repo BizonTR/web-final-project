@@ -6,6 +6,10 @@ const userCategory = require("../models/usercategory");
 //const db=require("../data/db");
 
 exports.getLogin=(req,res,next)=>{
+    if (req.session.isAuth) {
+        // Kullanıcı oturum açmışsa, profil sayfasına yönlendir
+        return res.redirect(`/user/profile/${req.session.userid}`);
+    }
     const message=req.session.message;
     console.log("mesaj",message);
     delete req.session.message;//sadece message session silinir. destroy tümünü siler.
