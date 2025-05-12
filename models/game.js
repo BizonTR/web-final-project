@@ -10,10 +10,6 @@ const Game = db.define("game", {
         type: DataTypes.TEXT,
         allowNull: true,
     },
-    isActive: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-    },
     url: {
         type: DataTypes.STRING,
         allowNull: false,

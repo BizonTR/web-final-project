@@ -100,10 +100,6 @@ exports.get_editGame = async (req, res, next) => {
     }
 };
 
-const stripHtml = (html) => {
-    return html.replace(/<[^>]*>?/gm, ""); // HTML etiketlerini kaldırır
-};
-
 exports.post_editGame = async (req, res, next) => {
     const gameId = req.params.id;
     const body = req.body;
