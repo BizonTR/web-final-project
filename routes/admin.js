@@ -28,6 +28,7 @@ router.get("/edit/game/:id", isAuth, isAdmin, adminController.get_editGame);
 router.post("/ban-user", isAuth, isAdmin, adminController.banUser);
 router.post("/change-role", isAuth, isAdmin, adminController.changeUserRole);
 router.post("/remove-ban", isAuth, isAdmin, adminController.removeBan);
+router.get("/user-bans/:id", isAuth, isAdmin, adminController.getUserBans);
 
 // Sadece Süper Admin tarafından kullanılabilen işlemler
 router.post("/delete/user", isAuth, isAdmin, isSuperAdmin, adminController.deleteUser);
