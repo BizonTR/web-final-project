@@ -53,28 +53,28 @@
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
-                                <th scope="col">Notice ID</th>
                                 <th scope="col">Title</th>
-                                <th scope="col">Explain</th>
-                                <th scope="col">User Name</th>
-                                <th scope="col">isActive</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Banner</th>
                                 <th scope="col" class="text-end">Processing</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% data.forEach((element, index) => { %>
+                            <% data.forEach((game, index) => { %>
                                 <tr>
-                                    <th scope="row"><%= index + 1 %></th>
-                                    <td><%= element.id %></td>
-                                    <td><%= element.title %></td>
-                                    <td><%= element.exp %></td>
-                                    <td><%= element.user.name + " " + element.user.surname %></td>
+                                    <td><%= index + 1 %></td>
+                                    <td><%= game.title %></td>
+                                    <td><%= game.description %></td>
                                     <td>
-                                        <input type="checkbox" disabled <%= element.isactive ? "checked" : null %>>
+                                        <% if (game.url) { %>
+                                            <img src="<%= game.url %>" alt="Banner Resmi" class="img-thumbnail" style="max-width: 100px;">
+                                        <% } else { %>
+                                            <span>Resim Yok</span>
+                                        <% } %>
                                     </td>
-                                    <td class="text-end text-nowrap">
-                                        <a href="/admin/edit/game/<%= element.id %>" class="btn btn-primary">Edit</a>
-                                        <a href="/admin/delete/game/<%= element.id %>" class="delete-btn btn btn-danger" data-id="<%= element.id %>" data-title="<%= element.title %>" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete</a>
+                                    <td>
+                                        <a href="/admin/edit/game/<%= game.id %>" class="btn btn-warning btn-sm">Düzenle</a>
+                                        <a href="/admin/delete/game/<%= game.id %>" class="btn btn-danger btn-sm">Sil</a>
                                     </td>
                                 </tr>
                             <% }) %>

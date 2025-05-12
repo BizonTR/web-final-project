@@ -68,6 +68,24 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Resimleri Yükle</button>
                         </form>
+                        <form action="/admin/edit/game/<%= data.id %>" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Oyun Başlığı</label>
+                                <input type="text" class="form-control" id="title" name="title" value="<%= data.title %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="explain" class="form-label">Açıklama</label>
+                                <textarea class="form-control" id="explain" name="explain" rows="3" required><%= data.description %></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bannerImage" class="form-label">Banner Resmi</label>
+                                <input type="file" class="form-control" id="bannerImage" name="bannerImage">
+                                <% if (data.url) { %>
+                                    <img src="<%= data.url %>" alt="Banner Resmi" class="img-fluid mt-2">
+                                <% } %>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                        </form>
                         <h3>Yüklenen Resimler</h3>
                         <div class="row">
                             <% if (data.GameImages && data.GameImages.length > 0) { %>

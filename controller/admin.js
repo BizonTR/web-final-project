@@ -19,28 +19,28 @@ exports.get_addGame = (req, res, next) => {
 
 exports.post_addGame = async (req, res, next) => {
     const body = req.body;
-    const isActive = body.isActive ? true : false;
-    const userid = req.session.userid;
-    const files = req.files;
+    const bannerImage = req.files['bannerImage'] ? req.files['bannerImage'][0] : null;
+    const galleryImages = req.files['galleryImages'] || [];
 
     try {
+        // Oyun kaydını oluştur
         const game = await Game.create({
             title: body.title,
             description: body.explain,
-            isActive: isActive,
-            userId: userid,
-            url: slugField(body.title),
+            url: bannerImage ? `/images/${bannerImage.filename}` : null, // Banner resmi
         });
 
-        if (files && files.length > 0) {
-            const imagePaths = files.map((file) => ({
+        // Galeri resimlerini kaydet
+        if (galleryImages.length > 0) {
+            const imagePaths = galleryImages.map((file) => ({
                 imagePath: `/images/${file.filename}`,
                 gameId: game.id,
             }));
 
-            await GameImages.bulkCreate(imagePaths);
+            await GameImages.bulkCreate(imagePaths); // Resimleri veritabanına kaydet
         }
 
+        req.session.message = { text: "Oyun ve resimler başarıyla eklendi!", class: "success" };
         res.redirect("/admin/list/game");
     } catch (err) {
         next(err);
@@ -101,22 +101,35 @@ exports.get_editGame = async (req, res, next) => {
 };
 
 exports.post_editGame = async (req, res, next) => {
-    const isActive = req.body.isActive == "on" ? true : false;
-    try {
-        const game = await Game.findByPk(req.body.noticeid);
-        if (game) {
-            game.title = req.body.title;
-            game.description = req.body.explain;
-            game.isActive = isActive;
-            game.userId = req.body.user;
-            game.url = slugField(req.body.title);
-            game.save();
-        }
-    } catch (err) {
-        return next(err);
-    }
+    const gameId = req.params.id;
+    const body = req.body;
+    const bannerImage = req.file;
 
-    res.redirect("/admin/list/game");
+    try {
+        const game = await Game.findByPk(gameId);
+        if (game) {
+            game.title = body.title;
+            game.description = body.explain;
+
+            // Yeni bir banner resmi yüklendiyse eski resmi sil
+            if (bannerImage) {
+                if (game.url) {
+                    const oldImagePath = path.join(__dirname, "../public", game.url);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath);
+                    }
+                }
+                game.url = `/images/${bannerImage.filename}`;
+            }
+
+            await game.save();
+        }
+
+        req.session.message = { text: "Oyun başarıyla güncellendi!", class: "success" };
+        res.redirect("/admin/list/game");
+    } catch (err) {
+        next(err);
+    }
 };
 
 exports.get_deleteGame = async (req, res, next) => {

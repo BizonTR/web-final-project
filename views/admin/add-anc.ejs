@@ -20,19 +20,19 @@
                         <form action="/admin/add/game" method="POST" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="title" class="form-label">Oyun Başlığı</label>
-                                <input type="text" name="title" id="title" class="form-control" required>
+                                <input type="text" class="form-control" id="title" name="title" required>
                             </div>
                             <div class="mb-3">
                                 <label for="explain" class="form-label">Açıklama</label>
-                                <textarea name="explain" id="explain" class="form-control" rows="5"></textarea>
+                                <textarea class="form-control" id="explain" name="explain" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="images" class="form-label">Resim Yükle</label>
-                                <input type="file" name="images" id="images" class="form-control" multiple>
+                                <label for="bannerImage" class="form-label">Banner Resmi</label>
+                                <input type="file" class="form-control" id="bannerImage" name="bannerImage" required>
                             </div>
                             <div class="mb-3">
-                                <label for="isActive" class="form-label">Aktif mi?</label>
-                                <input type="checkbox" name="isActive" id="isActive">
+                                <label for="galleryImages" class="form-label">Galeri Resimleri</label>
+                                <input type="file" class="form-control" id="galleryImages" name="galleryImages" multiple>
                             </div>
                             <button type="submit" class="btn btn-primary">Kaydet</button>
                         </form>
@@ -45,14 +45,22 @@
 
     <!--Ck Editor script kodu-->
     <script>
-        ClassicEditor
-            .create( document.querySelector( '#explain' ) )
-            .then( editor => {
-                console.log( editor );
-            } )
-            .catch( error => {
-                console.error( error );
-            } );
+        document.addEventListener("DOMContentLoaded", function () {
+            ClassicEditor
+                .create(document.querySelector('#explain'), {
+                    toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'blockQuote'], // Sadece temel araçlar
+                    removePlugins: ['Link', 'Image', 'Table'], // Gereksiz eklentileri kaldır
+                })
+                .then(editor => {
+                    const form = document.querySelector("form");
+                    form.addEventListener("submit", function () {
+                        document.querySelector("#explain").value = editor.getData();
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        });
     </script>
 </body>
 </html>
