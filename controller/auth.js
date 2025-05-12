@@ -25,29 +25,26 @@ exports.postLogin = async (req, res, next) => {
         });
 
         if (!user) {
-            return res.redirect('/auth/login');
+            req.session.message = { text: "Kullanıcı bulunamadı.", class: "danger" };
+            return res.redirect("/auth/login");
         }
 
         const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
 
         if (isPasswordValid) {
             req.session.isAuth = true;
-            req.session.userid = user.id; // Kullanıcı ID'sini session'a kaydet
+            req.session.userid = user.id;
             req.session.fullname = `${user.name} ${user.surname}`;
-            req.session.usercategoryId = user.usercategoryId || user.usercategory.id; // Kullanıcı kategorisini session'a kaydet
+            req.session.usercategoryId = user.usercategoryId || user.usercategory.id;
 
-            console.log('User logged in:', {
-                id: user.id,
-                name: user.name,
-                categoryId: req.session.usercategoryId,
-            });
-
-            return res.redirect('/');
+            // Kullanıcıyı ana sayfaya yönlendirmek yerine middleware'in çalışmasını sağla
+            return res.redirect("/");
         } else {
-            return res.redirect('/auth/login');
+            req.session.message = { text: "Şifre yanlış.", class: "danger" };
+            return res.redirect("/auth/login");
         }
     } catch (err) {
-        console.error('Login error:', err);
+        console.error("Login error:", err);
         next(err);
     }
 };
@@ -55,11 +52,9 @@ exports.postLogin = async (req, res, next) => {
 
 exports.logout = async (req, res) => {
     try {
-        // Store user ID before destroying session
-        const userId = req.session.userid;
-        
-        await req.session.destroy();
-        res.redirect("/auth/login");
+        await req.session.destroy(); // Oturumu sonlandır
+        res.clearCookie("connect.sid"); // Session cookie'sini temizle
+        res.redirect("/auth/login"); // Login sayfasına yönlendir
     } catch (err) {
         console.error("Oturum kapatma sırasında hata:", err);
         res.status(500).send("Oturum kapatılamadı.");
