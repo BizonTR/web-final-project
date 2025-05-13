@@ -7,6 +7,7 @@ const Friendship = require("../models/friendship");
 const FriendRequest = require("../models/friendrequest");
 const { Op } = require("sequelize");
 const GameImages = require("../models/gameimages");
+const slugField = require("../helpers/slugfield");
 
 exports.userHome=async(req,res,next)=>{ //ana sayfa
     try{
@@ -67,24 +68,29 @@ exports.getGames = async (req, res, next) => {
 };
 
 exports.getGameDetails = async (req, res, next) => {
-    const id = req.params.id;
-    try {
-        const game = await Game.findByPk(id);
-        const gameImages = await GameImages.findAll({ where: { gameId: id } });
+    const gameId = req.params.id;
 
+    try {
+        const game = await Game.findByPk(gameId);
         if (!game) {
-            return res.status(404).render("admin/error", { 
-                title: "Error", 
-                contentTitle: "Game Not Found", 
-                err: "Game not found" 
-            });
+            return res.status(404).send("Oyun bulunamadı.");
         }
 
-        res.render("user/game-details", { 
-            title: game.title, 
-            contentTitle: game.title, 
-            game,
-            gameImages
+        const slug = slugField(game.title);
+        if (req.params.slug !== slug) {
+            return res.redirect(`/game/${gameId}/${slug}`);
+        }
+
+        // Oyunla ilişkili resimleri al
+        const gameImages = await GameImages.findAll({
+            where: { gameId: gameId },
+        });
+
+        res.render("user/game-details", {
+            title: game.title,
+            contentTitle: game.title,
+            game: game,
+            gameImages: gameImages, // Resim galerisi için veriyi gönder
         });
     } catch (err) {
         next(err);
@@ -92,66 +98,36 @@ exports.getGameDetails = async (req, res, next) => {
 };
 
 exports.getProfileById = async (req, res, next) => {
-    const userId = req.session.userid; // Oturum açmış kullanıcının ID'si
-    const profileId = req.params.id; // Profilini görüntülemek istediğimiz kullanıcının ID'si
+    const userId = req.params.id;
 
     try {
-        // Kullanıcıyı DB'den al
-        const user = await Users.findByPk(profileId);
+        const user = await Users.findByPk(userId);
         if (!user) {
             return res.status(404).send("Kullanıcı bulunamadı.");
         }
 
-        // Arkadaşlık durumunu kontrol et
-        const isFriend = await Friendship.findOne({
-            where: {
-                userId: userId,
-                friendId: profileId,
-            },
-        });
-
-        // Gönderilmiş bir arkadaşlık isteği var mı kontrol et
-        const hasPendingRequest = await FriendRequest.findOne({
-            where: {
-                senderId: userId,
-                receiverId: profileId,
-                status: "pending",
-            },
-        });
-
-        // Oturum açmış kullanıcıya gelen bir arkadaşlık isteği var mı kontrol et
-        const hasIncomingRequest = await FriendRequest.findOne({
-            where: {
-                senderId: profileId,
-                receiverId: userId,
-                status: "pending",
-            },
-        });
+        const slug = slugField(`${user.name} ${user.surname}`);
+        if (req.params.slug !== slug) {
+            return res.redirect(`/user/profile/${userId}/${slug}`);
+        }
 
         // Kullanıcının arkadaşlarını al
         const friends = await Friendship.findAll({
-            where: { userId: profileId },
+            where: { userId: userId },
             include: [
                 {
                     model: Users,
-                    as: "friend", // Arkadaş bilgilerini al
+                    as: "friend",
                     attributes: ["id", "name", "surname"],
                 },
             ],
         });
 
-        // Kullanıcının admin olup olmadığını kontrol et
-        const isAdmin = req.session.usercategoryId === 1; // Admin kategorisi ID'si 1
-
         res.render("user/profile", {
             title: "Profil",
             contentTitle: "Kullanıcı Profili",
             user: user,
-            isFriend: !!isFriend, // Arkadaşsa true, değilse false
-            hasPendingRequest: !!hasPendingRequest, // Gönderilmiş istek varsa true
-            hasIncomingRequest: !!hasIncomingRequest, // Gelen istek varsa true
-            friends: friends.map(f => f.friend), // Arkadaş listesini gönder
-            isAdmin: isAdmin, // Kullanıcının admin olup olmadığını gönder
+            friends: friends.map(f => f.friend), // Sadece arkadaş bilgilerini gönder
         });
     } catch (err) {
         next(err);
