@@ -99,7 +99,8 @@ exports.getGameDetails = async (req, res, next) => {
 
 exports.getProfileById = async (req, res, next) => {
     const userId = req.params.id;
-    const currentUserId = req.session.userid;
+    const currentUserId = req.session.userid; // Giriş yapılmamışsa undefined olacak
+    const isLoggedIn = !!currentUserId; // Boolean olarak oturum durumu
 
     try {
         const user = await Users.findByPk(userId);
@@ -112,50 +113,65 @@ exports.getProfileById = async (req, res, next) => {
             return res.redirect(`/user/profile/${userId}/${slug}`);
         }
 
-        // Kullanıcının arkadaşlarını al
-        const friends = await Friendship.findAll({
-            where: { userId: userId },
-            include: [
-                {
-                    model: Users,
-                    as: "friend",
-                    attributes: ["id", "name", "surname"],
+        // Varsayılan değerler - giriş yapmamış kullanıcılar için
+        let friends = [];
+        let isFriend = false;
+        let hasPendingRequest = false;
+        let hasIncomingRequest = false;
+
+        // Sadece giriş yapmış kullanıcılar için arkadaşlık verilerini kontrol et
+        if (isLoggedIn) {
+            // Kullanıcının arkadaşlarını al
+            const friendships = await Friendship.findAll({
+                where: { userId: userId },
+                include: [
+                    {
+                        model: Users,
+                        as: "friend",
+                        attributes: ["id", "name", "surname"],
+                    },
+                ],
+            });
+
+            friends = friendships.map(f => f.friend);
+
+            // Oturum açmış kullanıcının arkadaş olup olmadığını kontrol et
+            isFriend = !!(await Friendship.findOne({
+                where: {
+                    userId: currentUserId,
+                    friendId: userId,
                 },
-            ],
-        });
+            }));
 
-        // Oturum açmış kullanıcının arkadaş olup olmadığını kontrol et
-        const isFriend = await Friendship.findOne({
-            where: {
-                userId: currentUserId,
-                friendId: userId,
-            },
-        });
+            // Oturum açmış kullanıcıdan gelen bir arkadaşlık isteği var mı kontrol et
+            hasPendingRequest = !!(await FriendRequest.findOne({
+                where: {
+                    senderId: currentUserId,
+                    receiverId: userId,
+                },
+            }));
 
-        // Oturum açmış kullanıcıdan gelen bir arkadaşlık isteği var mı kontrol et
-        const hasPendingRequest = await FriendRequest.findOne({
-            where: {
-                senderId: currentUserId,
-                receiverId: userId,
-            },
-        });
-
-        // Oturum açmış kullanıcıya gelen bir arkadaşlık isteği var mı kontrol et
-        const hasIncomingRequest = await FriendRequest.findOne({
-            where: {
-                senderId: userId,
-                receiverId: currentUserId,
-            },
-        });
+            // Oturum açmış kullanıcıya gelen bir arkadaşlık isteği var mı kontrol et
+            hasIncomingRequest = !!(await FriendRequest.findOne({
+                where: {
+                    senderId: userId,
+                    receiverId: currentUserId,
+                },
+            }));
+        }
 
         res.render("user/profile", {
             title: "Profil",
             contentTitle: "Kullanıcı Profili",
             user: user,
-            friends: friends.map(f => f.friend), // Sadece arkadaş bilgilerini gönder
-            isFriend: !!isFriend, // Boolean olarak gönder
-            hasPendingRequest: !!hasPendingRequest, // Boolean olarak gönder
-            hasIncomingRequest: !!hasIncomingRequest, // Boolean olarak gönder
+            friends: friends,
+            isFriend: isFriend,
+            hasPendingRequest: hasPendingRequest,
+            hasIncomingRequest: hasIncomingRequest,
+            isLoggedIn: isLoggedIn,
+            userid: currentUserId || null,
+            session: req.session || {},
+            slugField: slugField
         });
     } catch (err) {
         next(err);

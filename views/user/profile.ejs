@@ -12,7 +12,7 @@
         <p><strong>Soyad:</strong> <%= user.surname %></p>
         <p><strong>Email:</strong> <%= user.email %></p>
 
-        <% if (user.id !== userid) { %>
+        <% if (isLoggedIn && userid !== user.id) { %>
             <% if (isFriend) { %>
                 <form action="/friend/remove/<%= user.id %>" method="POST">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -36,16 +36,14 @@
             <% } %>
         <% } %>
 
-        <% if (user.id === userid) { %>
-            <% if (session.usercategoryId === 1 || session.usercategoryId === 2) { %>
-                <a href="/admin" class="btn btn-secondary mt-3">Admin Panel</a>
-            <% } %>
+        <% if (isLoggedIn && userid === user.id && session.usercategoryId && (session.usercategoryId === 1 || session.usercategoryId === 2)) { %>
+            <a href="/admin" class="btn btn-secondary mt-3">Admin Panel</a>
         <% } %>
     </div>
 
     <h2>Arkadaşlarım</h2>
     <ul>
-        <% if (friends.length > 0) { %>
+        <% if (friends && friends.length > 0) { %>
             <% friends.forEach(friend => { %>
                 <li>
                     <a href="/user/profile/<%= friend.id %>/<%= slugField(`${friend.name} ${friend.surname}`) %>">
@@ -54,7 +52,7 @@
                 </li>
             <% }) %>
         <% } else { %>
-            <p>Hiç arkadaşınız yok.</p>
+            <p>Hiç arkadaşı yok.</p>
         <% } %>
     </ul>
 </body>
