@@ -9,6 +9,8 @@ const locals = require("./middleware/local");
 const notFound = require("./middleware/notFound");
 const http = require('http'); // Add this for Socket.IO
 const socketIO = require('socket.io'); // Add Socket.IO
+const { generateSitemap } = require('./helpers/sitemap');
+const fs = require('fs');
 
 // Model'i ekleyelim
 const UserBan = require("./models/userban");
@@ -132,6 +134,43 @@ app.get('/get-csrf-token', (req, res) => {
   delete req.session.message;
 });
 
+// Sitemap endpoint'i
+app.get('/sitemap.xml', async (req, res) => {
+    try {
+        // Sitemap dosya yolu
+        const sitemapPath = path.join(__dirname, 'public/sitemap.xml');
+        
+        // Sitemap dosyası varsa ve 24 saatten daha yeni ise, doğrudan onu sun
+        if (fs.existsSync(sitemapPath)) {
+            const stats = fs.statSync(sitemapPath);
+            const fileAge = (new Date().getTime() - stats.mtime.getTime()) / 1000 / 60 / 60; // Saat cinsinden
+            
+            if (fileAge < 24) {
+                return res.sendFile(sitemapPath);
+            }
+        }
+        
+        // Sitemap dosyası yoksa veya eskiyse, yeni bir tane oluştur
+        const sitemap = await generateSitemap();
+        
+        res.header('Content-Type', 'application/xml');
+        res.send(sitemap);
+    } catch (error) {
+        console.error('Sitemap endpoint hatası:', error);
+        res.status(500).end();
+    }
+});
+
+// robots.txt endpoint'i
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send(`
+User-agent: *
+Allow: /
+Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml
+    `);
+});
+
 // İlişkiler
 Users.hasMany(Game, { // Anc yerine Game kullanıldı
     foreignKey: {
@@ -181,6 +220,15 @@ UserBan.belongsTo(Users);
     await db.sync({force:true});//her zaman sil ve yeniden oluştur
     // --tablolarda veri yoksa ilk verileri ekle
     await dummydata();
+    
+    // İlk sitemap'i oluştur
+    try {
+        console.log('İlk sitemap oluşturuluyor...');
+        await generateSitemap();
+        console.log('Sitemap başarıyla oluşturuldu.');
+    } catch (error) {
+        console.error('Sitemap oluşturma hatası:', error);
+    }
 })();
 // error catch for express
 app.use((err, req, res, next) => {
