@@ -5,13 +5,17 @@ module.exports = (req, res, next) => {
     res.locals.session = req.session;
     res.locals.isAuth = req.session.isAuth || false;
     res.locals.fullname = req.session.fullname || "";
-    res.locals.userid = req.session.userid || null; // Kullanıcı ID'sini session'dan al
+    res.locals.userid = req.session.userid || null;
 
-    // Get online users from app.locals
-    res.locals.onlineUsers = req.app.locals.getOnlineUsers ? req.app.locals.getOnlineUsers() : [];
-    res.locals.slugField = slugField;
-    // Debug için log ekleyin
-    console.log('Middleware: res.locals.userid:', res.locals.userid);
+    // Online kullanıcıları doğrudan global'den al
+    res.locals.onlineUsers = Array.isArray(global.onlineUsers) ? global.onlineUsers : [];
+    
+    // Ayrıca app.locals'dan da al (ikincil kontrol)
+    if (!res.locals.onlineUsers.length && Array.isArray(req.app.locals.onlineUsers)) {
+        res.locals.onlineUsers = req.app.locals.onlineUsers;
+    }
+    
+    res.locals.slugField = require("../helpers/slugfield");
 
     next();
 };

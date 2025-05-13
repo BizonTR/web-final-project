@@ -223,7 +223,7 @@ exports.post_addUser = async (req, res, next) => {
 };
 
 exports.listUser = async (req, res, next) => {
-    const searchQuery = req.query.search || ""; 
+    const searchQuery = req.query.search || "";
     const currentPage = parseInt(req.query.page) || 1;
     const itemsPerPage = 5;
 
@@ -260,12 +260,12 @@ exports.listUser = async (req, res, next) => {
 
         const totalPages = Math.ceil(count / itemsPerPage);
         
-        // Use the global online users array instead of sessionStore.all
-        // This array is populated by trackOnlineUsers middleware
-        const onlineUsers = global.onlineUsers || [];
+        // Socket.IO içinde güncellenen global.onlineUsers değişkenini doğrudan al
+        const currentOnlineUsers = Array.isArray(global.onlineUsers) ? global.onlineUsers : [];
         
-        // Convert any string IDs to numbers for consistent comparison
-        const onlineUserIds = onlineUsers.map(id => parseInt(id));
+        // Debug bilgisi
+        console.log('Online kullanıcılar (controller):', currentOnlineUsers);
+        console.log('Online kullanıcı sayısı:', currentOnlineUsers.length);
 
         res.render("admin/list-user", {
             title: "Kullanıcı Listele",
@@ -274,7 +274,7 @@ exports.listUser = async (req, res, next) => {
             searchQuery,
             currentPage,
             totalPages,
-            onlineUsers: onlineUserIds,
+            onlineUsers: currentOnlineUsers,
             session: req.session
         });
     } catch (err) {

@@ -32,6 +32,8 @@ const csrfProtection = require("./middleware/csrf"); // Add CSRF middleware
 
 // Online kullanıcı haritası (userId -> socketId)
 const onlineUsers = new Map();
+// Global erişim için kullanıcı ID'lerini array olarak tut
+global.onlineUsers = [];
 
 // Socket.IO bağlantı yönetimi
 io.on('connection', (socket) => {
@@ -45,18 +47,25 @@ io.on('connection', (socket) => {
         if (!isNaN(userId)) {
             console.log(`Kullanıcı ${userId} socket ID: ${socket.id} ile bağlandı`);
             onlineUsers.set(userId, socket.id);
-
+            
+            // Global değişkeni güncelle - NUMBER tipinde ID'ler ile
+            global.onlineUsers = Array.from(onlineUsers.keys()).map(id => parseInt(id));
+            
             // Güncel online kullanıcıları logla
-            console.log('Güncel online kullanıcılar:', Array.from(onlineUsers.keys()));
+            console.log('Güncel online kullanıcılar:', global.onlineUsers);
+            console.log('Online kullanıcı sayısı:', global.onlineUsers.length);
+
+            // App locals'a da ekle (middleware için)
+            app.locals.onlineUsers = global.onlineUsers;
 
             // Tüm istemcilere güncel online kullanıcı listesini gönder
-            io.emit('online-users-update', Array.from(onlineUsers.keys()));
+            io.emit('online-users-update', global.onlineUsers);
         } else {
             console.error('Geçersiz kullanıcı ID:', userId);
         }
     });
 
-    // Socket bağlantısı koptuğunda
+    // Socket bağlantısı koptuğunda benzer işlemleri yap
     socket.on('disconnect', () => {
         console.log('Socket bağlantısı koptu:', socket.id);
 
@@ -64,13 +73,20 @@ io.on('connection', (socket) => {
         for (const [userId, socketId] of onlineUsers.entries()) {
             if (socketId === socket.id) {
                 onlineUsers.delete(userId);
+                
+                // Global değişkeni güncelle
+                global.onlineUsers = Array.from(onlineUsers.keys());
+                
                 console.log(`Kullanıcı ${userId} artık çevrimdışı`);
 
                 // Tüm istemcilere güncel online kullanıcı listesini gönder
-                io.emit('online-users-update', Array.from(onlineUsers.keys()));
+                io.emit('online-users-update', global.onlineUsers);
                 break;
             }
         }
+        
+        // App locals'a da ekle
+        app.locals.onlineUsers = global.onlineUsers;
     });
 });
 

@@ -15,6 +15,52 @@
                     ☰ Menü
                 </button>
                 <h1 class="mt-4"><%= contentTitle %></h1>
+                
+                <!-- Kullanıcı istatistikleri -->
+                <div class="card mb-3">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <h6 class="mb-0 me-3">Kullanıcı İstatistikleri:</h6>
+                                <span class="badge bg-primary me-2">
+                                    <i class="fas fa-users"></i> Toplam: <%= data.length %>
+                                </span>
+                                <span class="badge bg-success me-2">
+                                    <i class="fas fa-circle text-success"></i> Çevrimiçi: <%= onlineUsers ? onlineUsers.length : 0 %>
+                                </span>
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-circle text-secondary"></i> Çevrimdışı: <%= data.length - (onlineUsers ? onlineUsers.length : 0) %>
+                                </span>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#userStats">
+                                    <i class="fas fa-chart-bar"></i> Detay
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Detaylı istatistikler (gizlenmiş) -->
+                        <div class="collapse mt-2" id="userStats">
+                            <div class="card card-body p-2 bg-light">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <small class="text-muted">Adminler: <strong><%= data.filter(u => u.usercategoryId === 1 || (u.usercategory && u.usercategory.id === 1)).length %></strong></small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted">Moderatörler: <strong><%= data.filter(u => u.usercategoryId === 2 || (u.usercategory && u.usercategory.id === 2)).length %></strong></small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted">Normal Kullanıcılar: <strong><%= data.filter(u => u.usercategoryId === 3 || (u.usercategory && u.usercategory.id === 3)).length %></strong></small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted">Banlı Kullanıcılar: <strong><%= data.filter(u => u.isBanned || (u.userbans && u.userbans.length > 0 && u.userbans[0].isActive)).length %></strong></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <%- include('../partials/search-pagination', {
                     searchAction: '/admin/list/users',
                     searchQuery: searchQuery,
@@ -235,6 +281,54 @@
             </div>
         </div>
     </div>
+
+    <!-- list-user.ejs dosyasındaki socket.io script kısmını değiştirin -->
+    <script>
+    // Gerçek zamanlı online kullanıcı güncellemesi
+    document.addEventListener('DOMContentLoaded', function() {
+        const socket = io();
+        
+        // Toplam kullanıcı sayısını EJS'den JavaScript'e aktar
+        const totalUsers = parseInt("<%- data.length %>");
+        console.log('Toplam kullanıcı sayısı:', totalUsers);
+        
+        // Online kullanıcı listesi güncellendiğinde
+        socket.on('online-users-update', function(onlineUsers) {
+            console.log('Online kullanıcılar güncellendi:', onlineUsers);
+            console.log('Online kullanıcı sayısı:', onlineUsers.length);
+            
+            // Online kullanıcı sayısını güncelle
+            const onlineCount = onlineUsers.length || 0;
+            const onlineCountElement = document.querySelector('.badge.bg-success i.fas.fa-circle.text-success').parentNode;
+            onlineCountElement.innerHTML = `<i class="fas fa-circle text-success"></i> Çevrimiçi: ${onlineCount}`;
+            
+            // Offline kullanıcı sayısını güncelle - hardcoded değer yerine toplam kullanıcı sayısını kullan
+            const offlineCount = Math.max(0, totalUsers - onlineCount);
+            console.log('Offline kullanıcı sayısı:', offlineCount);
+            
+            const offlineCountElement = document.querySelector('.badge.bg-secondary i.fas.fa-circle.text-secondary').parentNode;
+            offlineCountElement.innerHTML = `<i class="fas fa-circle text-secondary"></i> Çevrimdışı: ${offlineCount}`;
+            
+            // Her kullanıcının durumunu güncelle
+            document.querySelectorAll('[data-user-status]').forEach(element => {
+                const userId = parseInt(element.getAttribute('data-user-id'));
+                const isOnline = onlineUsers.includes(userId);
+                
+                element.className = `badge ${isOnline ? 'bg-success' : 'bg-secondary'}`;
+                element.innerHTML = `<i class="fas fa-circle"></i> ${isOnline ? 'Online' : 'Offline'}`;
+            });
+        });
+        
+        // Sayfa yüklendiğinde mevcut durumu güncelle
+        const onlineUsers = parseInt("<%= JSON.stringify(onlineUsers || []) %>");
+        const onlineCount = onlineUsers.length || 0;
+        const offlineCount = Math.max(0, totalUsers - onlineCount);
+        
+        // İlk yüklemede offline sayısını güncelle
+        const offlineCountElement = document.querySelector('.badge.bg-secondary i.fas.fa-circle.text-secondary').parentNode;
+        offlineCountElement.innerHTML = `<i class="fas fa-circle text-secondary"></i> Çevrimdışı: ${offlineCount}`;
+    });
+    </script>
 
     <script>
         // Ban Modal için script
