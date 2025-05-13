@@ -4,7 +4,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="mb-4"><%= contentTitle %></h1>
-        <form action="/admin/edit/game/<%= data.id %>" method="POST" enctype="multipart/form-data">
+        <form action="/admin/edit/game/<%= data.id %>?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="title" class="form-label">Oyun Başlığı</label>
                 <input type="text" class="form-control" id="title" name="title" value="<%= data.title %>" required>
@@ -44,5 +44,23 @@
         </form>
     </div>
     <%- include('../partials/script') %>
+    
+    <!-- CSRF Token güncelleme script'i -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL'den CSRF token'ını al
+            const urlParams = new URLSearchParams(window.location.search);
+            const csrfToken = urlParams.get('_csrf');
+            
+            if (csrfToken) {
+                // Form action URL'sini güncelle
+                const form = document.querySelector('form');
+                form.action = `/admin/edit/game/<%= data.id %>?_csrf=${csrfToken}`;
+                
+                // URL'deki token parametresini temizle (opsiyonel - güvenlik için)
+                window.history.replaceState({}, document.title, `/admin/edit/game/<%= data.id %>`);
+            }
+        });
+    </script>
 </body>
 </html>

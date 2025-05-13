@@ -139,5 +139,62 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/template/js/scripts.js"></script>
   <%- include('./partials/script') %>
+
+  <!-- Sayfa sonundaki script bölümüne ekleyin -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Başarılı form gönderimi sonrası CSRF token'larını yenile
+      const forms = document.querySelectorAll('form');
+      
+      forms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+          // Normal form gönderimini engelleme
+          if (form.dataset.ajaxSubmit === 'true') {
+            e.preventDefault();
+            
+            try {
+              // Form verilerini topla
+              const formData = new FormData(this);
+              
+              // Formu AJAX ile gönder
+              const response = await fetch(this.action, {
+                method: this.method,
+                body: formData
+              });
+              
+              // Başarılı yanıt durumunda
+              if (response.ok) {
+                // Yeni CSRF token almak için istek yap
+                const tokenResponse = await fetch('/get-csrf-token');
+                const tokenData = await tokenResponse.json();
+                
+                // Tüm formlardaki CSRF token'larını güncelle
+                document.querySelectorAll('input[name="_csrf"]').forEach(input => {
+                  input.value = tokenData.csrfToken;
+                });
+                
+                // URL'de _csrf parametresi olan formların action'larını güncelle
+                document.querySelectorAll('form[action*="_csrf"]').forEach(form => {
+                  const url = new URL(form.action, window.location.origin);
+                  url.searchParams.set('_csrf', tokenData.csrfToken);
+                  form.action = url.toString();
+                });
+                
+                // Başarı mesajını göster
+                if (tokenData.message) {
+                  alert(tokenData.message);
+                }
+                
+                // İsteğe bağlı olarak sayfayı yenile
+                // window.location.reload();
+              }
+            } catch (error) {
+              console.error('Form gönderimi hatası:', error);
+            }
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

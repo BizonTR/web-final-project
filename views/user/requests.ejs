@@ -13,9 +13,11 @@
                 <li>
                     <%= request.sender.name %> <%= request.sender.surname %>
                     <form action="/friend/accept/<%= request.sender.id %>" method="POST" style="display: inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-primary">Kabul Et</button>
                     </form>
                     <form action="/friend/reject/<%= request.sender.id %>" method="POST" style="display: inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-primary">Reddet</button>
                     </form>
                 </li>

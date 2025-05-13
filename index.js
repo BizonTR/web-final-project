@@ -24,6 +24,9 @@ const GameImages = require("./models/gameimages");
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+const checkBan = require("./middleware/checkBan");
+const trackOnlineUsers = require("./middleware/trackOnlineUsers");
+const csrfProtection = require("./middleware/csrf"); // Add CSRF middleware
 
 // Online kullanıcı haritası (userId -> socketId)
 const onlineUsers = new Map();
@@ -91,13 +94,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(configSession); // Session middleware
 app.use(locals); // Locals middleware
-
-// Middleware'i ekleyelim
-const checkBan = require("./middleware/checkBan");
-const trackOnlineUsers = require("./middleware/trackOnlineUsers");
-app.use(configSession);
-app.use(locals);
-// Session-based online takibini kaldır veya devre dışı bırak
+app.use(csrfProtection());
 // app.use(trackOnlineUsers); // Bu middleware'i kaldırın veya devre dışı bırakın
 app.use(checkBan); // Ban kontrolü için ekliyoruz
 
@@ -111,6 +108,29 @@ app.use("/user", userRouter);
 app.use("/auth", authRouter);
 app.use("/friend", friendRouter);
 app.use("/", userRouter);
+
+// Mevcut route tanımlamalarından sonra ekleyin
+const crypto = require('crypto');
+
+// CSRF token üretme fonksiyonu
+function generateToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// CSRF token'ı güncelleyen ve döndüren endpoint
+app.get('/get-csrf-token', (req, res) => {
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = generateToken();
+  }
+  
+  res.json({ 
+    csrfToken: req.session.csrfToken,
+    message: req.session.message ? req.session.message.text : null
+  });
+  
+  // Mesajı temizle
+  delete req.session.message;
+});
 
 // İlişkiler
 Users.hasMany(Game, { // Anc yerine Game kullanıldı

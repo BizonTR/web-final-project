@@ -132,6 +132,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="/admin/ban-user" method="post">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <div class="modal-body">
                         <input type="hidden" id="banUserId" name="userId">
                         
@@ -175,6 +176,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="/admin/change-role" method="post">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <div class="modal-body">
                         <input type="hidden" id="roleUserId" name="userId">
                         <input type="hidden" id="roleCategoryId" name="currentRole">
@@ -212,6 +214,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="/admin/delete/user" method="post">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <div class="modal-body">
                         <input type="hidden" id="deleteUserId" name="userId">
                         
@@ -293,6 +296,32 @@
                     document.getElementById('deleteUserName').textContent = userName;
                 });
             }
+        });
+
+        // Bu script'i varolan script'inizin içine ekleyin
+        // Modal açıldığında CSRF token'ı güncellemek için:
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Tüm modallar
+            const modals = document.querySelectorAll('.modal');
+            
+            modals.forEach(modal => {
+                modal.addEventListener('show.bs.modal', async function() {
+                    try {
+                        // Modal açılırken yeni token al
+                        const response = await fetch('/get-csrf-token');
+                        const data = await response.json();
+                        
+                        // Bu modaldaki CSRF input'unu güncelle
+                        const csrfInput = this.querySelector('input[name="_csrf"]');
+                        if (csrfInput) {
+                            csrfInput.value = data.csrfToken;
+                        }
+                    } catch (error) {
+                        console.error('CSRF token güncellenirken hata:', error);
+                    }
+                });
+            });
         });
     </script>
 </body>

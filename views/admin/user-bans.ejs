@@ -68,6 +68,7 @@
                                                         <td>
                                                             <% if (ban.isActive) { %>
                                                                 <form action="/admin/remove-ban" method="post" class="d-inline">
+                                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                                                     <input type="hidden" name="banId" value="<%= ban.id %>">
                                                                     <button type="submit" class="btn btn-sm btn-success">
                                                                         <i class="fas fa-unlock"></i> Banı Kaldır

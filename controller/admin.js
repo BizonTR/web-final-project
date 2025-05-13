@@ -105,16 +105,16 @@ exports.post_editGame = async (req, res, next) => {
     const body = req.body;
     const bannerImage = req.files['bannerImage'] ? req.files['bannerImage'][0] : null;
     const galleryImages = req.files['galleryImages'] || [];
-    const imagesToDelete = req.body.imagesToDelete || []; // Silinecek resimlerin ID'leri
+    const imagesToDelete = req.body.imagesToDelete || [];
 
     try {
         const game = await Game.findByPk(gameId);
         if (game) {
             // Oyun bilgilerini güncelle
             game.title = body.title;
-            game.description = body.description; // Açıklama alanını kaydet
+            game.description = body.description;
 
-            // Yeni bir banner resmi yüklendiyse eski resmi sil
+            // Banner resmi güncelleme
             if (bannerImage) {
                 if (game.url) {
                     const oldImagePath = path.join(__dirname, "../public", game.url);
@@ -127,7 +127,7 @@ exports.post_editGame = async (req, res, next) => {
 
             await game.save();
 
-            // Yeni galeri resimlerini kaydet
+            // Galeri resimleri güncelleme
             if (galleryImages.length > 0) {
                 const imagePaths = galleryImages.map((file) => ({
                     imagePath: `/images/${file.filename}`,
@@ -152,8 +152,12 @@ exports.post_editGame = async (req, res, next) => {
             }
         }
 
+        // Başarı mesajı ekle
         req.session.message = { text: "Oyun başarıyla güncellendi!", class: "success" };
-        res.redirect(`/admin/edit/game/${gameId}`);
+        
+        // Oyunu düzenleme sayfasına yönlendir, yeni CSRF token'ını URL'de gönder
+        // Bu kritik - yeni token'ı URL'de açık bir şekilde gönderiyoruz
+        return res.redirect(`/admin/edit/game/${gameId}?_csrf=${req.session.csrfToken}`);
     } catch (err) {
         next(err);
     }

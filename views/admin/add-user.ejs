@@ -23,7 +23,7 @@
                         <div class="col-md-7 mt-3 bg-success pt-4 text-info"><!--3 col solda-->
                             
                     <form action="" method="post" name="userform"> 
-                       
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <!-- message parametresi her istekte gelmeyebilir. 
                         çünkü login get ve post olmak üzere iki metod vardır
                         message bir değişken olduğu için tanımlı olup olmaduğı typeof ile kontrol edilir -->

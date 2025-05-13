@@ -15,18 +15,22 @@
         <% if (user.id !== userid) { %>
             <% if (isFriend) { %>
                 <form action="/friend/remove/<%= user.id %>" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn-danger">Arkadaşı Çıkar</button>
                 </form>
             <% } else if (hasIncomingRequest) { %>
                 <form action="/friend/accept/<%= user.id %>" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn-success">Arkadaşlık İsteğini Kabul Et</button>
                 </form>
             <% } else if (hasPendingRequest) { %>
                 <form action="/friend/remove-request/<%= user.id %>" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn-warning">Arkadaşlık İsteğini Geri Al</button>
                 </form>
             <% } else { %>
                 <form action="/friend/add/<%= user.id %>" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn-primary">Arkadaş Ekle</button>
                 </form>
             <% } %>
