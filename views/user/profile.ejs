@@ -44,8 +44,8 @@
         <% if (friends.length > 0) { %>
             <% friends.forEach(friend => { %>
                 <li>
-                    <a href="/user/profile/<%= user.id %>/<%= slugField(`${user.name} ${user.surname}`) %>">
-                        <%= user.name %> <%= user.surname %>
+                    <a href="/user/profile/<%= friend.id %>/<%= slugField(`${friend.name} ${friend.surname}`) %>">
+                        <%= friend.name %> <%= friend.surname %>
                     </a>
                 </li>
             <% }) %>

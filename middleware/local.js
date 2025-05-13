@@ -1,3 +1,5 @@
+const slugField = require("../helpers/slugfield");
+
 module.exports = (req, res, next) => {
     // Make session data available to all views
     res.locals.session = req.session;
@@ -7,7 +9,7 @@ module.exports = (req, res, next) => {
 
     // Get online users from app.locals
     res.locals.onlineUsers = req.app.locals.getOnlineUsers ? req.app.locals.getOnlineUsers() : [];
-
+    res.locals.slugField = slugField;
     // Debug için log ekleyin
     console.log('Middleware: res.locals.userid:', res.locals.userid);
 
