@@ -14,6 +14,7 @@ const fs = require('fs');
 
 // Model'i ekleyelim
 const UserBan = require("./models/userban");
+const VisitorCount = require("./models/visitorcount");
 
 const db = require("./data/db");
 const dummydata = require("./models/dummy-data");
@@ -29,6 +30,7 @@ const io = socketIO(server);
 const checkBan = require("./middleware/checkBan");
 const trackOnlineUsers = require("./middleware/trackOnlineUsers");
 const csrfProtection = require("./middleware/csrf"); // Add CSRF middleware
+const visitorCounter = require("./middleware/visitorCounter");
 
 // Online kullanıcı haritası (userId -> socketId)
 const onlineUsers = new Map();
@@ -112,8 +114,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(configSession); // Session middleware
 app.use(locals); // Locals middleware
+app.use(visitorCounter); // Ziyaretçi sayacı middleware'i
 app.use(csrfProtection());
-// app.use(trackOnlineUsers); // Bu middleware'i kaldırın veya devre dışı bırakın
 app.use(checkBan); // Ban kontrolü için ekliyoruz
 
 // ---routes
@@ -244,6 +246,16 @@ UserBan.belongsTo(Users);
         console.log('Sitemap başarıyla oluşturuldu.');
     } catch (error) {
         console.error('Sitemap oluşturma hatası:', error);
+    }
+
+    // İlk ziyaretçi kaydını oluştur
+    try {
+        await VisitorCount.create({
+            count: 0,
+            date: new Date()
+        });
+    } catch (error) {
+        console.error("İlk ziyaretçi kaydı oluşturulurken hata:", error);
     }
 })();
 // error catch for express

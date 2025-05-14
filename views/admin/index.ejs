@@ -13,9 +13,84 @@
                         ☰ Menü
                     </button>
                     <h1 class="mt-4"><%= contentTitle %></h1>    
+                    <!-- Diğer içerikten sonra ekle -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="fas fa-chart-line me-2"></i> Ziyaretçi İstatistikleri
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <h5 class="card-title">Toplam Ziyaretçi</h5>
+                                                    <h2 class="display-4"><%= visitorStats.total.toLocaleString() %></h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <h5 class="card-title">Bugünkü Ziyaretçi</h5>
+                                                    <h2 class="display-4"><%= visitorStats.today.toLocaleString() %></h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <% if (visitorStats.weekly && visitorStats.weekly.length > 0) { %>
+                                    <div class="mt-3">
+                                        <h5>Son 7 Gün</h5>
+                                        <div class="chart-container" style="position: relative; height:200px;">
+                                            <canvas id="visitorChart"></canvas>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     <%- include('../partials/script') %>
+    <!-- Chart.js kütüphanesini ekle -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            <% if (visitorStats.weekly && visitorStats.weekly.length > 0) { %>
+            // Grafik verilerini hazırla
+            const ctx = document.getElementById('visitorChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [<%= visitorStats.weekly.map(day => `'${new Date(day.date).toLocaleDateString()}'`).join(',') %>],
+                    datasets: [{
+                        label: 'Ziyaretçi Sayısı',
+                        data: [<%= visitorStats.weekly.map(day => day.count).join(',') %>],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            <% } %>
+        });
+    </script>
     </body>
 </html>

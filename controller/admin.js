@@ -3,14 +3,59 @@ const Users = require("../models/users");
 const userCategory = require("../models/usercategory");
 const bcrypt = require("bcrypt");
 const slugField = require("../helpers/slugfield");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const GameImages = require("../models/gameimages");
 const path = require("path");
 const fs = require("fs");
 const UserBan = require("../models/userban");
+const VisitorCount = require("../models/visitorcount");
 
-exports.homePage = (req, res, next) => {
-    res.render("admin/index", { title: "Ana sayfa", contentTitle: "Admin Home Page" });
+exports.homePage = async (req, res, next) => {
+    try {
+        // Toplam ziyaretçi sayısını getir
+        const totalVisitors = await VisitorCount.sum('count');
+        
+        // Bugünün ziyaretçi sayısını getir
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const todayVisitors = await VisitorCount.findOne({
+            attributes: ['count'],
+            where: {
+                date: {
+                    [Op.eq]: today
+                }
+            }
+        });
+        
+        // Son 7 günün ziyaretçi istatistikleri
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        
+        const weeklyStats = await VisitorCount.findAll({
+            where: {
+                date: {
+                    [Op.gte]: lastWeek
+                }
+            },
+            order: [['date', 'ASC']]
+        });
+        
+        res.render("admin/index", {
+            title: "Admin",
+            contentTitle: "Admin Panel",
+            userId: req.session.userid,
+            fullname: req.session.fullname,
+            role: req.session.usercategoryId,
+            visitorStats: {
+                total: totalVisitors || 0,
+                today: todayVisitors ? todayVisitors.count : 0,
+                weekly: weeklyStats
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
 };
 
 exports.get_addGame = (req, res, next) => {
