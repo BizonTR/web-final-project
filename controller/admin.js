@@ -59,7 +59,7 @@ exports.homePage = async (req, res, next) => {
 };
 
 exports.get_addGame = (req, res, next) => {
-    res.render("admin/add-anc", { title: "Oyun Ekle", contentTitle: "Add Game Page" }); // `anc` yerine `game`
+    res.render("admin/add-game", { title: "Oyun Ekle", contentTitle: "Add Game Page" });
 };
 
 exports.post_addGame = async (req, res, next) => {
@@ -109,11 +109,9 @@ exports.listGame = async (req, res, next) => {
             },
             limit: itemsPerPage,
             offset: (currentPage - 1) * itemsPerPage,
-        });
+        });        const totalPages = Math.ceil(count / itemsPerPage);
 
-        const totalPages = Math.ceil(count / itemsPerPage);
-
-        res.render("admin/list-anc", {
+        res.render("admin/list-game", {
             title: "Oyun Listele",
             contentTitle: "Oyunlar",
             data: rows,
@@ -130,11 +128,9 @@ exports.get_editGame = async (req, res, next) => {
     try {
         const selectedData = await Game.findByPk(req.params.id, {
             include: [GameImages], // GameImages ile ilişkili resimleri al
-        });
+        });        const users = await Users.findAll({ raw: true });
 
-        const users = await Users.findAll({ raw: true });
-
-        res.render("admin/edit-anc", {
+        res.render("admin/edit-game", {
             title: "Oyun Düzenle",
             contentTitle: "Edit Game",
             data: selectedData, // Oyun ve ilişkili resimleri gönder
@@ -222,7 +218,7 @@ exports.get_deleteGame = async (req, res, next) => {
 
 exports.post_deleteGame = async (req, res, next) => {
     try {
-        const game = await Game.findByPk(req.body.ancid);
+        const game = await Game.findByPk(req.body.gameid);
         if (game) {
             game.destroy();
         }

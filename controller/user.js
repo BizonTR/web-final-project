@@ -1,6 +1,5 @@
 // const data=require("../data/dataarray");
 //const db=require("../data/db");
-const Anc=require("../models/game");
 const Game = require("../models/game");
 const Users = require("../models/users");
 const Friendship = require("../models/friendship");
@@ -11,8 +10,8 @@ const slugField = require("../helpers/slugfield");
 
 exports.userHome=async(req,res,next)=>{ //ana sayfa
     try{
-         //const allData=await db.execute("SELECT * FROM anc");
-         const allData=await Anc.findAll({raw:true});
+         //const allData=await db.execute("SELECT * FROM game");
+         const allData=await Game.findAll({raw:true});
         res.render("user/index",{title:"Ana sayfa",contentTitle:"Ana sayfa",data:allData});
     }
     catch(err){
@@ -21,16 +20,15 @@ exports.userHome=async(req,res,next)=>{ //ana sayfa
    
 }
 
-exports.viewAnc=async(req,res,next)=>{//duyuru details
+exports.viewGame=async(req,res,next)=>{//game details
     try{
-        //const selectedData=await Anc.findByPk(req.params.id);
-        const selectedData=await Anc.findAll({
+        //const selectedData=await Game.findByPk(req.params.id);
+        const selectedData=await Game.findAll({
             where: {url:req.params.slug},
             raw:true
-        });
-        console.log(selectedData)
-        const allData=await Anc.findAll({raw:true});
-        res.render("user/view-anc",{title:selectedData.title,contentTitle:selectedData.title,viewData:selectedData[0],data:allData});
+        });        console.log(selectedData)
+        const allData=await Game.findAll({raw:true});
+        res.render("user/view-game",{title:selectedData.title,contentTitle:selectedData.title,viewData:selectedData[0],data:allData});
    }
    catch(err){
        return next(err);

@@ -96,10 +96,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="/admin/delete/game" method="post">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <div class="modal-body">
-                        <p class="fw-bold">Anouncement ID:<label id="id" class="fw-semibold"></label></p>
-                        <p class="fw-bold">Anouncement Title:<label id="title" class="fw-semibold"></label></p>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">                    <div class="modal-body">                        <p class="fw-bold">Game ID:<label id="id" class="fw-semibold"></label></p>
+                        <p class="fw-bold">Game Title:<label id="title" class="fw-semibold"></label></p>
                         <p class="fw-bold">Kaydı silmek istediğinize emin misiniz?</p>
                         <input type="hidden" value="" id="gameid" name="gameid">
                     </div>
