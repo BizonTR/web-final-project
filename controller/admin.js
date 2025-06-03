@@ -10,6 +10,9 @@ const fs = require("fs");
 const UserBan = require("../models/userban");
 const VisitorCount = require("../models/visitorcount");
 
+// Başta gerekli modeli import edelim
+const Announcement = require("../models/announcement");
+
 exports.homePage = async (req, res, next) => {
     try {
         // Toplam ziyaretçi sayısını getir
@@ -583,4 +586,140 @@ exports.deleteUser = async (req, res, next) => {
     } catch (err) {
         return next(err);
     }
+};
+
+// Duyuru Listesi
+exports.listAnnouncements = async (req, res, next) => {
+    const searchQuery = req.query.search || "";
+    const currentPage = parseInt(req.query.page) || 1;
+    const itemsPerPage = 5;
+
+    try {
+        // Duyuruları filtrele ve sayfalama uygula
+        const { count, rows } = await Announcement.findAndCountAll({
+            where: {
+                title: { [Op.like]: `%${searchQuery}%` },
+            },
+            include: {
+                model: Users,
+                attributes: ["name", "surname"],
+            },
+            order: [["createdAt", "DESC"]],
+            limit: itemsPerPage,
+            offset: (currentPage - 1) * itemsPerPage,
+        });
+
+        const totalPages = Math.ceil(count / itemsPerPage);
+
+        res.render("admin/list-announcement", {
+            title: "Duyuru Listesi",
+            contentTitle: "Duyurular",
+            data: rows,
+            searchQuery,
+            currentPage,
+            totalPages,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// Duyuru Ekleme Sayfası
+exports.get_addAnnouncement = (req, res, next) => {
+    res.render("admin/add-announcement", { 
+        title: "Duyuru Ekle", 
+        contentTitle: "Duyuru Ekle" 
+    });
+};
+
+// Duyuru Ekleme İşlemi
+exports.post_addAnnouncement = async (req, res, next) => {
+    const { title, content } = req.body;
+
+    try {
+        // Duyuru kaydını oluştur
+        await Announcement.create({
+            title: title,
+            content: content,
+            userId: req.session.userid
+        });
+
+        req.session.message = { text: "Duyuru başarıyla eklendi!", class: "success" };
+        res.redirect("/admin/list/announcements");
+    } catch (err) {
+        next(err);
+    }
+};
+
+// Duyuru Düzenleme Sayfası
+exports.get_editAnnouncement = async (req, res, next) => {
+    try {
+        const selectedData = await Announcement.findByPk(req.params.id);
+
+        if (!selectedData) {
+            req.session.message = { text: "Duyuru bulunamadı!", class: "danger" };
+            return res.redirect("/admin/list/announcements");
+        }
+
+        res.render("admin/edit-announcement", {
+            title: "Duyuru Düzenle",
+            contentTitle: "Duyuru Düzenle",
+            data: selectedData
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+// Duyuru Düzenleme İşlemi
+exports.post_editAnnouncement = async (req, res, next) => {
+    const announcementId = req.params.id;
+    const { title, content } = req.body;
+
+    try {
+        const announcement = await Announcement.findByPk(announcementId);
+        
+        if (!announcement) {
+            req.session.message = { text: "Duyuru bulunamadı!", class: "danger" };
+            return res.redirect("/admin/list/announcements");
+        }
+
+        // Duyuru bilgilerini güncelle
+        announcement.title = title;
+        announcement.content = content;
+        announcement.updatedAt = new Date();
+
+        await announcement.save();
+
+        req.session.message = { text: "Duyuru başarıyla güncellendi!", class: "success" };
+        res.redirect(`/admin/list/announcements`);
+    } catch (err) {
+        next(err);
+    }
+};
+
+// Duyuru Silme İşlemi
+exports.get_deleteAnnouncement = async (req, res, next) => {
+    try {
+        const announcement = await Announcement.findByPk(req.params.id);
+        if (announcement) {
+            await announcement.destroy();
+        }
+    } catch (err) {
+        return next(err);
+    }
+    res.redirect("/admin/list/announcements");
+};
+
+// Duyuru Silme İşlemi (POST)
+exports.post_deleteAnnouncement = async (req, res, next) => {
+    try {
+        const announcement = await Announcement.findByPk(req.body.announcementId);
+        if (announcement) {
+            await announcement.destroy();
+        }
+    } catch (err) {
+        return next(err);
+    }
+    res.redirect("/admin/list/announcements");
 };

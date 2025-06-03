@@ -2,10 +2,11 @@ const Game = require("../models/game");
 const Users = require("../models/users");
 const userCategory = require("../models/usercategory");
 const bcrypt = require('bcrypt');
+const Announcement = require("./announcement");
 
 async function populate() {
-    const categoryCount = await userCategory.count();
-    if (categoryCount === 0) {
+    const userCount = await Users.count();
+    if (userCount === 0) {
         await userCategory.bulkCreate([
             { categoryname: "Admin" },
             { categoryname: "Moderator" },
@@ -28,7 +29,10 @@ async function populate() {
             password: await bcrypt.hash("123", 10),
             usercategoryId: 3,
         });
+    }
 
+    const gameCount = await Game.count();
+    if (gameCount === 0) {
         await Game.create({
             title: "Witcher 3",
             description: "RPG",
@@ -53,6 +57,47 @@ async function populate() {
         for (const game of games) {
             await Game.create(game);
         }
+    }
+    
+    // Bu satırı ekleyin
+    await addAnnouncements();
+}
+
+// Dummy duyuruları ekleyelim
+async function addAnnouncements() {
+    const count = await Announcement.count();
+    if (count === 0) {
+        await Announcement.bulkCreate([
+            {
+                title: "Yeni Oyunlar Eklendi!",
+                content: "Sitemize yeni oyunlar eklendi. Hemen inceleyin ve yeni oyunlarımızın keyfini çıkarın. Detaylı bilgi için oyun sayfalarını ziyaret edebilirsiniz.",
+                userId: 1,
+                createdAt: new Date(2023, 5, 15),
+                updatedAt: new Date(2023, 5, 15)
+            },
+            {
+                title: "Sistem Bakımı Duyurusu",
+                content: "Değerli kullanıcılarımız, 20 Haziran 2023 tarihinde saat 02:00-04:00 arasında sistem bakımı yapılacaktır. Bu süre zarfında hizmetlerimiz geçici olarak kullanılamayacaktır. Anlayışınız için teşekkür ederiz.",
+                userId: 1,
+                createdAt: new Date(2023, 5, 18),
+                updatedAt: new Date(2023, 5, 18)
+            },
+            {
+                title: "Yeni Özellikler",
+                content: "Oyun platformumuza arkadaş ekleme ve mesajlaşma özellikleri eklenmiştir. Artık diğer oyuncularla daha kolay iletişim kurabilirsiniz. Profil sayfanızdan yeni özellikleri hemen keşfedin!",
+                userId: 1,
+                createdAt: new Date(2023, 6, 5),
+                updatedAt: new Date(2023, 6, 5)
+            },
+            {
+                title: "Büyük Yaz İndirimi",
+                content: "15 Temmuz - 15 Ağustos tarihleri arasında tüm oyunlarda %50'ye varan indirimler olacaktır. Bu büyük fırsatı kaçırmayın ve en sevdiğiniz oyunları hemen kütüphanenize ekleyin!",
+                userId: 1,
+                createdAt: new Date(2023, 6, 14),
+                updatedAt: new Date(2023, 6, 14)
+            }
+        ]);
+        console.log("Dummy duyurular eklendi");
     }
 }
 

@@ -7,17 +7,60 @@ const FriendRequest = require("../models/friendrequest");
 const { Op } = require("sequelize");
 const GameImages = require("../models/gameimages");
 const slugField = require("../helpers/slugfield");
+const Announcement = require("../models/announcement");
 
-exports.userHome=async(req,res,next)=>{ //ana sayfa
-    try{
-         //const allData=await db.execute("SELECT * FROM game");
-         const allData=await Game.findAll({raw:true});
-        res.render("user/index",{title:"Ana sayfa",contentTitle:"Ana sayfa",data:allData});
+exports.userHome = async (req, res, next) => {
+    try {
+        // Mevcut oyun sorgularınız
+        const searchQuery = req.query.search || "";
+        const currentPage = parseInt(req.query.page) || 1;
+        const itemsPerPage = 6;
+
+        const { count, rows: games } = await Game.findAndCountAll({
+            where: {
+                title: {
+                    [Op.like]: `%${searchQuery}%`
+                }
+            },
+            limit: itemsPerPage,
+            offset: (currentPage - 1) * itemsPerPage,
+            order: [["createdAt", "DESC"]]
+        });
+
+        const totalPages = Math.ceil(count / itemsPerPage);
+        
+        console.log("Duyuruları getirmeye çalışıyorum...");
+        const announcements = await Announcement.findAll({
+            include: {
+                model: Users,
+                attributes: ["name", "surname"]
+            },
+            order: [["createdAt", "DESC"]],
+            limit: 5
+        });
+        console.log("Duyuru sayısı:", announcements ? announcements.length : 0);
+        
+        // Debug için duyuruları yazdır
+        if (announcements && announcements.length > 0) {
+            console.log("İlk duyurunun başlığı:", announcements[0].title);
+        } else {
+            console.log("Hiç duyuru bulunamadı");
+        }
+        
+        res.render("user/index", {
+            title: "Ana sayfa", 
+            contentTitle: "Ana sayfa", 
+            games: games,
+            announcements: announcements || [], // Null olma durumuna karşı önlem
+            searchQuery,
+            currentPage,
+            totalPages
+        });
     }
     catch(err){
+        console.error("userHome hata:", err);
         return next(err);
     }
-   
 }
 
 exports.viewGame=async(req,res,next)=>{//game details

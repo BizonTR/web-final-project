@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head') %>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <%- include('../partials/sidebar') %>
+
+        <!-- Page content wrapper -->
+        <div id="page-content-wrapper">
+
+            <!-- Page content -->
+            <div class="container-fluid">
+                <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                    ☰ Menü
+                </button>
+                <h1 class="mt-4"><%= contentTitle %></h1>
+                
+                <div class="row">
+                    <div class="col-md-8 bg-light ms-2 border border-info">
+                        <form action="/admin/edit/announcement/<%= data.id %>?_csrf=<%= csrfToken %>" method="POST">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Duyuru Başlığı</label>
+                                <input type="text" class="form-control" id="title" name="title" value="<%= data.title %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">İçerik</label>
+                                <textarea class="form-control" id="content" name="content" rows="10" required><%= data.content %></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary mb-3">Güncelle</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <%- include('../partials/script') %>
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.1.0/classic/ckeditor.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            ClassicEditor
+                .create(document.querySelector('#content'), {
+                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        });
+    </script>
+</body>
+</html>

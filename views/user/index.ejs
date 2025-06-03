@@ -31,6 +31,50 @@
                 </div>
             <% }) %>
         </div>
+
+        <!-- Announcements -->
+        <div class="mt-5">
+            <h2>Duyurular</h2>
+            <div class="row">
+                <script>
+                    // Client-side'da console.log için
+                    console.log('EJS içinde announcements:', <%= typeof announcements !== 'undefined' ? JSON.stringify(announcements) : 'undefined' %>);
+                    console.log('announcements type:', <%= typeof announcements !== 'undefined' ? 'Array.isArray(announcements): ' + Array.isArray(announcements) : 'undefined' %>);
+                    console.log('announcements length:', <%= typeof announcements !== 'undefined' ? announcements.length : '0' %>);
+                </script>
+
+                <% if (typeof announcements !== 'undefined' && announcements && announcements.length > 0) { %>
+                    <% announcements.forEach(announcement => { %>
+                        <div class="col-md-12 mb-3">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><%= announcement.title %></h5>
+                                    <small class="text-muted"><%= new Date(announcement.createdAt).toLocaleDateString('tr-TR') %></small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text"><%= announcement.content.length > 200 ? announcement.content.substring(0, 200) + '...' : announcement.content %></p>
+                                    <% if (announcement.user) { %>
+                                        <div class="text-end">
+                                            <small class="text-muted">Ekleyen: <%= announcement.user.name %> <%= announcement.user.surname %></small>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            Henüz duyuru bulunmamaktadır. 
+                            <% if (typeof announcements !== 'undefined') { %>
+                                <!-- Debug bilgisi -->
+                                (Announcements: <%= typeof announcements %>, Length: <%= announcements ? announcements.length : 'N/A' %>)
+                            <% } %>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
     </div>
     <%- include('../partials/script') %>
 </body>

@@ -60,4 +60,13 @@ router.get("/delete/user/:id", (req, res) => {
 
 router.get("/ckeditor", adminController.ckeditor);
 
+// Duyuru işlemleri
+router.get("/list/announcements", isAuth, isAdmin, adminController.listAnnouncements);
+router.get("/add/announcement", isAuth, isAdmin, adminController.get_addAnnouncement);
+router.post("/add/announcement", isAuth, isAdmin, adminController.post_addAnnouncement);
+router.get("/edit/announcement/:id", isAuth, isAdmin, adminController.get_editAnnouncement);
+router.post("/edit/announcement/:id", isAuth, isAdmin, adminController.post_editAnnouncement);
+router.get("/delete/announcement/:id", isAuth, isAdmin, adminController.get_deleteAnnouncement);
+router.post("/delete/announcement", isAuth, isAdmin, adminController.post_deleteAnnouncement);
+
 module.exports = router;

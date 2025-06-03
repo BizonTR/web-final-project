@@ -15,6 +15,7 @@ const fs = require('fs');
 // Model'i ekleyelim
 const UserBan = require("./models/userban");
 const VisitorCount = require("./models/visitorcount");
+const Announcement = require("./models/announcement"); // Make sure this line exists
 
 const db = require("./data/db");
 const dummydata = require("./models/dummy-data");
@@ -228,6 +229,20 @@ Users.hasMany(UserBan, {
 });
 UserBan.belongsTo(Users);
 
+// Duyuru ilişkileri eklendi
+Users.hasMany(Announcement, {
+    foreignKey: {
+        name: 'userId',
+        allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+});
+
+Announcement.belongsTo(Users, {
+    foreignKey: 'userId'
+});
+
 // uygulanması
 // --await çağrıları mutlaka async fonnksiyon içinde olmalıdır.
 // --fonksiyon aşağıdaki gibi hem oluşturulup hem de çağrılabilir.
@@ -256,6 +271,16 @@ UserBan.belongsTo(Users);
         });
     } catch (error) {
         console.error("İlk ziyaretçi kaydı oluşturulurken hata:", error);
+    }
+
+    // Duyuruları kontrol et
+    try {
+        const Announcement = require("./models/announcement");
+        const allAnnouncements = await Announcement.findAll();
+        console.log("Veritabanındaki tüm duyurular:", allAnnouncements.length);
+        console.log("İlk duyuru:", allAnnouncements[0] ? JSON.stringify(allAnnouncements[0], null, 2) : "Yok");
+    } catch (err) {
+        console.error("Duyuru kontrolü sırasında hata:", err);
     }
 })();
 // error catch for express
