@@ -54,7 +54,8 @@ exports.userHome = async (req, res, next) => {
             announcements: announcements || [], // Null olma durumuna karşı önlem
             searchQuery,
             currentPage,
-            totalPages
+            totalPages,
+            slugField: slugField // slug fonksiyonunu EJS'ye gönder
         });
     }
     catch(err){
@@ -102,6 +103,7 @@ exports.getGames = async (req, res, next) => {
             searchQuery,
             currentPage,
             totalPages,
+            slugField: slugField // slugField fonksiyonunu ekledik
         });
     } catch (err) {
         next(err);
@@ -212,7 +214,34 @@ exports.getProfileById = async (req, res, next) => {
             isLoggedIn: isLoggedIn,
             userid: currentUserId || null,
             session: req.session || {},
-            slugField: slugField
+            slugField: slugField // slugField fonksiyonunu ekledik
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.getAnnouncementDetails = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const announcement = await Announcement.findOne({
+            where: { id },
+            include: {
+                model: Users,
+                attributes: ["name", "surname"]
+            }
+        });
+        if (!announcement) {
+            return res.status(404).render("not-found", {
+                title: "Duyuru Bulunamadı",
+                contentTitle: "Duyuru Bulunamadı",
+                url: req.originalUrl
+            });
+        }
+        res.render("user/announcement-details", {
+            title: announcement.title,
+            contentTitle: announcement.title,
+            announcement
         });
     } catch (err) {
         next(err);

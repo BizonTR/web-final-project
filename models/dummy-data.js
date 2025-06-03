@@ -25,7 +25,7 @@ async function populate() {
         await Users.create({
             name: "Emre",
             surname: "Demir",
-            email: "demirkemir@mail.com",
+            email: "emre@mail.com",
             password: await bcrypt.hash("123", 10),
             usercategoryId: 3,
         });

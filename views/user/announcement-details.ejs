@@ -1,0 +1,25 @@
+<!-- filepath: views/user/announcement-details.ejs -->
+<!DOCTYPE html>
+<html lang="tr">
+<%- include('../partials/head') %>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><%= announcement.title %></h2>
+                <small><%= new Date(announcement.createdAt).toLocaleDateString('tr-TR') %></small>
+            </div>
+            <div class="card-body">
+                <p class="lead"><%= announcement.content %></p>
+                <% if (announcement.user) { %>
+                    <div class="text-end">
+                        <small class="text-muted">Ekleyen: <%= announcement.user.name %> <%= announcement.user.surname %></small>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        <a href="/user" class="btn btn-secondary mt-4">Tüm Duyurulara Dön</a>
+    </div>
+    <%- include('../partials/script') %>
+</body>
+</html>

@@ -37,17 +37,5 @@
     </div>
     
     <%- include('../partials/script') %>
-    <script src="https://cdn.ckeditor.com/ckeditor5/35.1.0/classic/ckeditor.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            ClassicEditor
-                .create(document.querySelector('#content'), {
-                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        });
-    </script>
 </body>
 </html>
