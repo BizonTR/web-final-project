@@ -7,7 +7,7 @@
         <div class="mb-4 text-center">
             <!-- Resmi bir container içine aldık ve responsive hale getirdik -->
             <div class="img-container">
-                <img src="<%= game.url %>" alt="<%= game.title %>" class="img-fluid rounded shadow-sm">
+                <img src="<%= game.url %>" alt="<%= game.title %>" class="img-fluid rounded shadow-sm" onerror="this.onerror=null;this.src='/kirmizi-logo-yatay.png';">
             </div>
         </div>
         <p><strong>Description:</strong> <%= game.description %></p>
