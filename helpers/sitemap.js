@@ -2,6 +2,7 @@ const { SitemapStream, streamToPromise } = require('sitemap');
 const { Readable } = require('stream');
 const Game = require('../models/game');
 const Users = require('../models/users');
+const Announcement = require('../models/announcement');
 const slugField = require('./slugfield');
 const fs = require('fs');
 const path = require('path');
@@ -18,6 +19,10 @@ async function generateSitemap() {
         
         const users = await Users.findAll();
         console.log(`${users.length} kullanıcı bulundu`);
+        
+        // Duyuruları da çek
+        const announcements = await Announcement.findAll();
+        console.log(`${announcements.length} duyuru bulundu`);
         
         // Statik sayfaları ekleyin
         const links = [
@@ -51,10 +56,20 @@ async function generateSitemap() {
             }
         });
         
+        // Duyuru URL'lerini ekle
+        announcements.forEach(announcement => {
+            links.push({
+                url: `/user/announcement/${announcement.id}/${slugField(announcement.title)}`,
+                changefreq: 'monthly',
+                priority: 0.4,
+                lastmod: announcement.updatedAt ? announcement.updatedAt.toISOString() : undefined
+            });
+        });
+        
         console.log(`Toplam ${links.length} URL sitemap'e eklendi`);
         
         // Sitemap stream'i oluştur
-        const stream = new SitemapStream({ hostname: 'https://yourdomain.com' }); // Domain adınızı buraya ekleyin
+        const stream = new SitemapStream({ hostname: 'http:/localhost:3000' }); // Domain adınızı buraya ekleyin
         
         // Stream'e URL'leri ekle ve XML'e dönüştür
         const data = await streamToPromise(Readable.from(links).pipe(stream));

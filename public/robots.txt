@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /auth/logout
 
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: http://localhost:3000/sitemap.xml
