@@ -1,44 +1,53 @@
 <%- include('../partials/head') %>
-<!-- GLightbox CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
-<body>
-    <div class="container">
-        <h1 class="mt-4"><%= contentTitle %></h1>
-        <div class="mb-4 text-center">
-            <!-- Resmi bir container içine aldık ve responsive hale getirdik -->
-            <div class="img-container">
-                <img src="<%= game.url %>" alt="<%= game.title %>" class="img-fluid rounded shadow-sm" onerror="this.onerror=null;this.src='/kirmizi-logo-yatay.png';">
-            </div>
-        </div>
-        <p><strong>Description:</strong> <%= game.description %></p>
+    <!-- GLightbox CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 
-        <!-- Resim Galerisi -->
-        <h3>Resim Galerisi</h3>
-        <div class="row">
-            <% gameImages.forEach((image, idx) => { %>
-                <div class="col-6 col-md-4 mb-3">
-                    <a href="<%= image.imagePath %>" class="glightbox" data-gallery="game-gallery">
-                        <img src="<%= image.imagePath %>" alt="Game Image" class="img-fluid rounded shadow-sm" style="cursor:zoom-in;">
-                    </a>
+    <body>
+        <div class="container">
+            <h1 class="mt-4">
+                <%= contentTitle %>
+            </h1>
+            <div class="mb-4 text-center">
+                <!-- Resmi bir container içine aldık ve responsive hale getirdik -->
+                <div class="img-container">
+                    <img src="<%= game.url %>" alt="<%= game.title %>" class="img-fluid rounded shadow-sm"
+                        onerror="this.onerror=null;this.src='/kirmizi-logo-yatay.png';">
                 </div>
-            <% }) %>
-        </div>
+            </div>
+            <p><strong>Description:</strong>
+                <%= game.description %>
+            </p>
 
-        <a href="/" class="btn btn-primary mt-3">Back to Games</a>
-    </div>
-    <%- include('../partials/script') %>
-    <!-- GLightbox JS -->
-    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const lightbox = GLightbox({
-                selector: '.glightbox',
-                loop: true,
-                zoomable: true,
-                touchNavigation: true,
-                slideEffect: 'slide',
-                moreText: '', // x/y sayacı otomatik gelir
-            });
-        });
-    </script>
-</body>
+            <!-- Resim Galerisi -->
+            <h3>Resim Galerisi</h3>
+            <div class="row">
+                <% gameImages.forEach((image, idx)=> { %>
+                    <div class="col-6 col-md-4 mb-3">
+                        <div class="ratio ratio-16x9"> <!-- Kare oran -->
+                            <a href="<%= image.imagePath %>" class="glightbox" data-gallery="game-gallery">
+                                <img src="<%= image.imagePath %>" alt="Game Image"
+                                    class="w-100 h-100 rounded shadow-sm object-fit-cover" style="cursor: zoom-in;">
+                            </a>
+                        </div>
+                    </div>
+                    <% }) %>
+            </div>
+
+            <a href="/" class="btn btn-primary mt-3">Back to Games</a>
+        </div>
+        <%- include('../partials/script') %>
+            <!-- GLightbox JS -->
+            <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const lightbox = GLightbox({
+                        selector: '.glightbox',
+                        loop: true,
+                        zoomable: true,
+                        touchNavigation: true,
+                        slideEffect: 'slide',
+                        moreText: '', // x/y sayacı otomatik gelir
+                    });
+                });
+            </script>
+    </body>
