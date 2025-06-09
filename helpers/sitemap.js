@@ -70,14 +70,9 @@ async function generateSitemap() {
         
         // Sitemap stream'i oluştur
         const stream = new SitemapStream({ hostname: 'http:/localhost:3000' }); // Domain adınızı buraya ekleyin
-        
         // Stream'e URL'leri ekle ve XML'e dönüştür
         const data = await streamToPromise(Readable.from(links).pipe(stream));
-        
-        // Sitemap dosyasını kaydet
-        const sitemapPath = path.join(__dirname, '../public/sitemap.xml');
-        fs.writeFileSync(sitemapPath, data);
-        
+        // Artık dosyaya kaydetmiyoruz, sadece XML string olarak döndürüyoruz
         return data.toString();
     } catch (error) {
         console.error('Sitemap oluşturma hatası:', error);
